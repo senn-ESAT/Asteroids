@@ -1,25 +1,8 @@
 struct Bullet{
   mm::Vec2 p1, speed;
   double timeFire;
-  bool fired = false;
   Bullet *prox;
 };
-
-void InsertBullet(Bullet **lista, mm::Vec2 pos, mm::Vec2 speed, double timeFire){
-  Bullet *temp;
-  printf("a");
-  temp = (Bullet*)malloc(1 * sizeof(Bullet));
-  printf("b");
-  temp->p1 = pos;
-  printf("c");
-  temp->speed = speed;
-  printf("d");
-  temp->timeFire = timeFire;
-  printf("f");
-  temp->prox = *lista;
-  printf("g");
-  *lista = temp;
-}
 
 int BulletAmount(Bullet *lista){
   Bullet *loop = nullptr;
@@ -30,34 +13,36 @@ int BulletAmount(Bullet *lista){
   return i;
 }
 
-void ElimBullet(Bullet **lista, double time){
-  Bullet *aux;
-  Bullet *proximo;
-  aux = *lista;
-  printf("PRE DO ");
-  do{
-    printf("PRE PROX ");
-    proximo = aux->prox;
-    printf("POST PROX ");
+void InsertBullet(Bullet **lista, mm::Vec2 pos, mm::Vec2 speed, double timeFire){
+  Bullet *temp;
+  temp = (Bullet*)malloc(1 * sizeof(Bullet));
 
-    // en caso de ser el rpimero
-    if(aux->timeFire + 2000 < time){
-      printf("case1 ");
-      aux->prox = nullptr;
+  temp->prox = *lista;
+  temp->p1 = pos;
+  temp->speed = speed;
+  temp->timeFire = timeFire;
+
+  *lista = temp;
+}
+
+void ElimBullet(Bullet **lista, double time){
+  Bullet *aux = nullptr, *proximo = nullptr;
+  aux = *lista;
+  do{
+    proximo = aux->prox;
+
+    if((aux->timeFire + 2000) < esat::Time()){
+      aux = proximo;
     }
 
-    // para los otros
     if(proximo){
-      if(proximo->timeFire + 2000 < time){
-        printf("case2 ");
+      if((proximo->timeFire + 2000) < esat::Time()){
         aux->prox = proximo->prox;
-      }
-      else{
-        printf("case0 ");
+      }else{
         aux = aux->prox;
       }
     }
-  }while(aux->prox != nullptr);
-  printf("end ELIM ");
 
+  }while(aux != nullptr && aux->prox != nullptr);
+  *lista = aux;
 }
