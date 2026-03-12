@@ -21,7 +21,7 @@ struct Ship{
 
 const unsigned int ScreenX = 800;
 const unsigned int ScreenY = 600;
-const float max_speed = 10.0f;
+const float max_speed = 9.0f;
 
 void initShip(Ship *ship){
   float angle_a = ship->angulo;
@@ -75,7 +75,7 @@ void Controls(Ship *ship, Bullet **bullets){
       ship->speed = mm::scaleV2(ship->speed, max_speed);
     }else{
       mm::Vec2 thrust = {sinf(ship->angulo), cosf(ship->angulo)};
-      thrust = mm::scaleV2(thrust, 0.1f);
+      thrust = mm::scaleV2(thrust, 0.08f);
       ship->speed = mm::sumVec2(ship->speed, thrust);
     }
   }
@@ -93,10 +93,7 @@ void Controls(Ship *ship, Bullet **bullets){
     mm::Vec2 dir = {sinf(ship->angulo), cosf(ship->angulo)};
     mm::Vec2 speed;
     dir = normalize(dir);
-    if(current_speed > 8.0f){
-      speed = mm::scaleV2(dir, mm::magnitudeV2(ship->speed)+2);
-    }
-    else{speed = mm::scaleV2(dir, 8.0f);}
+    speed = mm::scaleV2(dir, 8.0f);
 
     InsertBullet(&(*bullets), pos, speed, esat::Time());
   }
@@ -106,13 +103,18 @@ void Controls(Ship *ship, Bullet **bullets){
   }
 }
 
-void Move(Ship *ship, Bullet **bullets){
+void Move(Ship *ship, Bullet **bullets, Asteroids **aste){
 
   ship->pos = mm::sumVec2(ship->pos, ship->speed);
   
   for(int i = 0; i < BulletAmount(*bullets); i++){
     printf("i");
     bullets[i]->p1 = mm::sumVec2(bullets[i]->p1, bullets[i]->speed);
+  }
+
+  for(int i = 0; i < 5; i++){
+    printf("i");
+    (*aste)[i].pos = mm::sumVec2((*aste)[i].pos, (*aste)[i].speed);
   }
 }
 
@@ -136,7 +138,7 @@ void pacman(mm::Vec2 *coord, int *way){
   *way = 0;
 }
 
-void CheckBorder(Ship *ship, Bullet **bullets){
+void CheckBorder(Ship *ship, Bullet **bullets, Asteroids **aste){
   int colision = 0;
   colision = checkBorderColisions(ship->pos);
   if(colision != 0){
@@ -149,11 +151,18 @@ void CheckBorder(Ship *ship, Bullet **bullets){
       pacman(&bullets[i]->p1, &colision);
     }
   }
+
+  for(int i = 0; i < 5; i++){
+    colision = checkBorderColisions((*aste)[i].pos);
+    if(colision != 0){
+      pacman(&(*aste)[i].pos, &colision);
+    }
+  }
 }
 
 int esat::main(int argc, char** argv) {
   Ship ship = {{ScreenX/2.0f, ScreenY/2.0f}, {0.0f, 0.0f}};
-  Bullet *bullets; bullets = nullptr;
+  Bullet *bullets = nullptr;
   Asteroids *asteroid = nullptr;
   srand(time(nullptr));
   double current_time = 0.0;
@@ -172,15 +181,18 @@ int esat::main(int argc, char** argv) {
     
     printf(" [init: %d ", BulletAmount(bullets));
     initShip(&ship);
+
     printf(" Draw: %d ", BulletAmount(bullets));
     DrawThings(ship, bullets, asteroid);
+
     printf(" Controls: %d ", BulletAmount(bullets));
     Controls(&ship, &bullets);
+
     printf(" Move: %d ", BulletAmount(bullets));
-    Move(&ship, &bullets);
-    printf(" border%d ", BulletAmount(bullets));
-    CheckBorder(&ship, &bullets);
-    printf(" %d] ", BulletAmount(bullets));
+    Move(&ship, &bullets, &asteroid);
+
+    printf(" border %d] ", BulletAmount(bullets));
+    CheckBorder(&ship, &bullets, &asteroid);
     
     // friction
     ship.speed = mm::scaleV2(ship.speed, 0.995f);

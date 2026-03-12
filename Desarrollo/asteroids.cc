@@ -50,23 +50,12 @@ void DrawAsteroid(esat::Mat3 m) {
 }
 
 void initAsteroids(Asteroids **aste){
-  printf(" A");
   *aste = (Asteroids*)malloc(5 * sizeof(Asteroids));
-  printf("A ");
-  for(int i = 0; i < 5; i++){
-    printf("%d B", i);
-
-    aste[i]->pos = {((rand() % 8000)/10.0f), ((rand() % 6000 )/10.0f)};
-    printf(" [X]: %f [Y]: %f", aste[i]->pos.x, aste[i]->pos.y);
-    aste[i]->speed = {1.0f + ((rand() % 2000)/1000.0f), 1.0f + ((rand() % 2000)/1000.0f)};
-    printf(" [SX]: %f [SY]: %f", aste[i]->speed.x, aste[i]->speed.y);
-    aste[i]->type = rand()%4;
-    switch(aste[i]->type){
-      case 0: aste[i]->size = 20.0f;break;
-      case 1: aste[i]->size = 30.0f;break;
-      case 2: aste[i]->size = 40.0f;break;
-      case 3: aste[i]->size = 50.0f;break;
-    }
-    printf("C \n");
+  
+  for (int i = 0; i < 5; i++){
+    (*aste)[i].type = 3; printf("TYPE ");
+    (*aste)[i].size = 2.0f; printf("SIZE ");
+    (*aste)[i].pos = {(float)(rand()%800), (float)(rand()%600)};printf("pos "); //pos random entre 800 y 600 pero en float 
+    (*aste)[i].speed = {-0.5f + (float)(rand()%2), -0.5f + (float)(rand()%2)};printf("speed ");
   }
 }
