@@ -45,18 +45,19 @@ void DrawThings(Ship ship, Bullet *bullets, Asteroids *aste){
   esat::DrawPath(ship.puntosNave, 4);
 
   float *puntosDisparo;
-  puntosDisparo = (float*)malloc(10*sizeof(float));  
-  for(int i = 0; i < BulletAmount(bullets); i++){
-    puntosDisparo[0] = bullets[i].p1.x - 1;
-    puntosDisparo[1] = bullets[i].p1.y;
-    puntosDisparo[2] = bullets[i].p1.x + 1;
-    puntosDisparo[3] = bullets[i].p1.y;
-    puntosDisparo[4] = bullets[i].p1.x;
-    puntosDisparo[5] = bullets[i].p1.y - 1;
-    puntosDisparo[6] = bullets[i].p1.x;
-    puntosDisparo[7] = bullets[i].p1.y + 1;
-    puntosDisparo[8] = bullets[i].p1.x - 1;
-    puntosDisparo[9] = bullets[i].p1.y;
+  puntosDisparo = (float*)malloc(10*sizeof(float));
+  Bullet *b;
+  for(b = bullets; b != nullptr; b = b->prox){
+    puntosDisparo[0] = b->p1.x - 1;
+    puntosDisparo[1] = b->p1.y;
+    puntosDisparo[2] = b->p1.x + 1;
+    puntosDisparo[3] = b->p1.y;
+    puntosDisparo[4] = b->p1.x;
+    puntosDisparo[5] = b->p1.y - 1;
+    puntosDisparo[6] = b->p1.x;
+    puntosDisparo[7] = b->p1.y + 1;
+    puntosDisparo[8] = b->p1.x - 1;
+    puntosDisparo[9] = b->p1.y;
     esat::DrawSolidPath(puntosDisparo, 5);
   }
 
@@ -88,18 +89,22 @@ void Controls(Ship *ship, Bullet **bullets){
   }
 
   // shoot
-  if(esat::IsSpecialKeyDown(esat::kSpecialKey_Space)){
+  if(esat::IsSpecialKeyDown(esat::kSpecialKey_Space) && 4 > BulletAmount((*bullets))){
     mm::Vec2 pos = ship->pos;
     mm::Vec2 dir = {sinf(ship->angulo), cosf(ship->angulo)};
     mm::Vec2 speed;
     dir = normalize(dir);
-    speed = mm::scaleV2(dir, 8.0f);
 
-    InsertBullet(&(*bullets), pos, speed, esat::Time());
+    speed = mm::scaleV2(dir, 8.0f);
+    mm::Vec2Print(speed);
+
+    InsertBullet(&(*bullets), pos, speed);
   }
 
-  if(BulletAmount(*bullets)){
+  if(BulletAmount(*bullets) != 0){
+
     ElimBullet(&(*bullets), esat::Time());
+
   }
 }
 
@@ -107,13 +112,12 @@ void Move(Ship *ship, Bullet **bullets, Asteroids **aste){
 
   ship->pos = mm::sumVec2(ship->pos, ship->speed);
   
-  for(int i = 0; i < BulletAmount(*bullets); i++){
-    printf("i");
-    bullets[i]->p1 = mm::sumVec2(bullets[i]->p1, bullets[i]->speed);
+  Bullet *b;
+  for(b = *bullets; b != nullptr; b = b->prox){
+    b->p1 = mm::sumVec2(b->p1, b->speed);
   }
 
   for(int i = 0; i < 5; i++){
-    printf("i");
     (*aste)[i].pos = mm::sumVec2((*aste)[i].pos, (*aste)[i].speed);
   }
 }
@@ -128,7 +132,7 @@ int checkBorderColisions(mm::Vec2 coord){
 
 void pacman(mm::Vec2 *coord, int *way){
   switch(*way){
-    printf("[pacma] ");
+    printf("[pacman] ");
 
     case 1: coord->x = ScreenX; break;
     case 2: coord->x = 0;       break;
@@ -144,13 +148,16 @@ void CheckBorder(Ship *ship, Bullet **bullets, Asteroids **aste){
   if(colision != 0){
     pacman(&ship->pos, &colision);
   }
+  colision = 0;
 
-  for(int i = 0; i < BulletAmount(*bullets); i++){
-    colision = checkBorderColisions(bullets[i]->p1);
+  Bullet *b;
+  for(b = *bullets; b != nullptr; b = b->prox){
+    colision = checkBorderColisions(b->p1);
     if(colision != 0){
-      pacman(&bullets[i]->p1, &colision);
+      pacman(&b->p1, &colision);
     }
   }
+   colision = 0;
 
   for(int i = 0; i < 5; i++){
     colision = checkBorderColisions((*aste)[i].pos);
@@ -158,6 +165,7 @@ void CheckBorder(Ship *ship, Bullet **bullets, Asteroids **aste){
       pacman(&(*aste)[i].pos, &colision);
     }
   }
+  printf("END BORDER COLISION");
 }
 
 int esat::main(int argc, char** argv) {
