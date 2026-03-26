@@ -2,6 +2,7 @@ struct Asteroids{
   int type;
   float size;
   mm::Vec2 pos, speed;
+//  esat::Vec3 *points;
 };
 
 const int kNPoints = 7;
@@ -49,13 +50,23 @@ void DrawAsteroid(esat::Mat3 m) {
   esat::DrawPath(&tr_circle[0].x, kNPoints);
 }
 
-void initAsteroids(Asteroids **aste){
-  *aste = (Asteroids*)malloc(5 * sizeof(Asteroids));
+void initAsteroids(Asteroids **aste, int amount){
+  *aste = (Asteroids*)malloc(amount * sizeof(Asteroids));
   
-  for (int i = 0; i < 5; i++){
-    (*aste)[i].type = 3; printf("TYPE ");
-    (*aste)[i].size = 2.0f; printf("SIZE ");
-    (*aste)[i].pos = {(float)(rand()%800), (float)(rand()%600)};printf("pos "); //pos random entre 800 y 600 pero en float 
-    (*aste)[i].speed = {-0.5f + (float)(rand()%2), -0.5f + (float)(rand()%2)};printf("speed ");
+  for (int i = 0; i < amount; i++){
+    (*aste)[i].type = 3;    // shape
+    //(*aste)[i].points = (esat::Vec3*)malloc(7*sizeof(esat::Vec3));
+    // (*aste)[i].points = {
+    //   {  0.0f,   2.0f, 1.0f},
+    //   {- 5.0f, - 8.0f, 1.0f},
+    //   {- 3.0f, - 8.0f, 1.0f},
+    //   {  0.0f,   5.0f, 1.0f},
+    //   {  8.0f, - 0.0f, 1.0f},
+    //   {  5.0f, - 8.0f, 1.0f},
+    //   {  0.0f,   2.0f, 1.0f}
+    // };
+    (*aste)[i].size = 3.0f; // size also functions as lives
+    (*aste)[i].pos = {(float)(rand()%800), (float)(rand()%600)};   // random position 
+    (*aste)[i].speed = {-1.0f + (float)(rand()%3), -1.0f + (float)(rand()%3)};; // random speed between -1 ad +1
   }
 }

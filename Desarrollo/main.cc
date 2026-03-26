@@ -11,6 +11,7 @@
 #include "./MathLib.h"
 #include "./bullet.cc"
 #include "./asteroids.cc"
+#include "./enemies.cc"
 
 struct Ship{
   mm::Vec2 pos;
@@ -21,7 +22,7 @@ struct Ship{
 
 const unsigned int ScreenX = 800;
 const unsigned int ScreenY = 600;
-const float max_speed = 9.0f;
+const float max_speed = 7.0f;
 
 void initShip(Ship *ship){
   float angle_a = ship->angulo;
@@ -75,9 +76,9 @@ void Controls(Ship *ship, Bullet **bullets){
       ship->speed = mm::normalize(ship->speed);
       ship->speed = mm::scaleV2(ship->speed, max_speed);
     }else{
-      mm::Vec2 thrust = {sinf(ship->angulo), cosf(ship->angulo)};
-      thrust = mm::scaleV2(thrust, 0.08f);
-      ship->speed = mm::sumVec2(ship->speed, thrust);
+      mm::Vec2 thrust = {sinf(ship->angulo), cosf(ship->angulo)}; // ship direction
+      thrust = mm::scaleV2(thrust, 0.065f);                        // add acceleration
+      ship->speed = mm::sumVec2(ship->speed, thrust);             // add thrust to current speed
     }
   }
 
@@ -95,10 +96,10 @@ void Controls(Ship *ship, Bullet **bullets){
     mm::Vec2 speed;
     dir = normalize(dir);
 
-    speed = mm::scaleV2(dir, 8.0f);
+    speed = mm::scaleV2(dir, 7.5f);
     mm::Vec2Print(speed);
 
-    InsertBullet(&(*bullets), pos, speed);
+    InsertBullet(&(*bullets), pos, speed, 0);
   }
 
   if(BulletAmount(*bullets) != 0){
@@ -132,7 +133,6 @@ int checkBorderColisions(mm::Vec2 coord){
 
 void pacman(mm::Vec2 *coord, int *way){
   switch(*way){
-    printf("[pacman] ");
 
     case 1: coord->x = ScreenX; break;
     case 2: coord->x = 0;       break;
@@ -165,7 +165,6 @@ void CheckBorder(Ship *ship, Bullet **bullets, Asteroids **aste){
       pacman(&(*aste)[i].pos, &colision);
     }
   }
-  printf("END BORDER COLISION");
 }
 
 int esat::main(int argc, char** argv) {
@@ -176,30 +175,26 @@ int esat::main(int argc, char** argv) {
   double current_time = 0.0;
   double last_time = 0.0;
   double fps = 60.0;
+  int screen = 0; // 0 login/registrar 1 menu de juego 2 juego
 
   esat::WindowInit(ScreenX, ScreenY);
   esat::WindowSetMouseVisibility(true);
 
-  initAsteroids(&asteroid);
+  initAsteroids(&asteroid, 5);
 
   while (!esat::IsSpecialKeyDown(esat::kSpecialKey_Escape) && esat::WindowIsOpened()) {
     last_time = esat::Time();
     esat::DrawBegin();
     esat::DrawClear(0, 0, 0);
     
-    printf(" [init: %d ", BulletAmount(bullets));
     initShip(&ship);
 
-    printf(" Draw: %d ", BulletAmount(bullets));
     DrawThings(ship, bullets, asteroid);
 
-    printf(" Controls: %d ", BulletAmount(bullets));
     Controls(&ship, &bullets);
 
-    printf(" Move: %d ", BulletAmount(bullets));
     Move(&ship, &bullets, &asteroid);
 
-    printf(" border %d] ", BulletAmount(bullets));
     CheckBorder(&ship, &bullets, &asteroid);
     
     // friction
@@ -210,7 +205,6 @@ int esat::main(int argc, char** argv) {
     do {
       current_time = esat::Time();
     } while((current_time - last_time) <= 1000.0 / fps);
-    printf("[end]\n");
   }
   esat::WindowDestroy();
   return 0;
