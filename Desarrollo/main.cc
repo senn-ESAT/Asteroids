@@ -41,7 +41,7 @@ void initShip(Ship *ship){
   ship->puntosNave[7] = cosf(angle_a)*5+ship->pos.y;
 }
 
-void DrawThings(Ship ship, Bullet *bullets, Asteroids *aste){
+void DrawThings(Ship ship, Bullet *bullets, Asteroids *aste, UFO *enemy){
   esat::DrawSetStrokeColor(255, 255, 255);
   esat::DrawPath(ship.puntosNave, 4);
 
@@ -64,8 +64,11 @@ void DrawThings(Ship ship, Bullet *bullets, Asteroids *aste){
 
   for(int i = 0; i < 5; i++){
     esat::Mat3 a = MatAsteroid(aste[i].pos, aste[i].size);
-    DrawAsteroid(a);
+    DrawAsteroid(a, aste[i].points);
   }
+
+  esat::Mat3 a = MatAsteroid(enemy->pos, enemy->size);
+  DrawAsteroid(a, enemy->UFOPoints);
 }
 
 void Controls(Ship *ship, Bullet **bullets){
@@ -77,7 +80,7 @@ void Controls(Ship *ship, Bullet **bullets){
       ship->speed = mm::scaleV2(ship->speed, max_speed);
     }else{
       mm::Vec2 thrust = {sinf(ship->angulo), cosf(ship->angulo)}; // ship direction
-      thrust = mm::scaleV2(thrust, 0.065f);                        // add acceleration
+      thrust = mm::scaleV2(thrust, 0.065f);                       // add acceleration
       ship->speed = mm::sumVec2(ship->speed, thrust);             // add thrust to current speed
     }
   }
@@ -167,38 +170,62 @@ void CheckBorder(Ship *ship, Bullet **bullets, Asteroids **aste){
   }
 }
 
+void LogIn(){}
+
+void Menu(){}
+
+void InGame(Ship *ship, Bullet **bullets, Asteroids **asteroid, UFO **enemy){
+  initShip(&(*ship));
+
+  DrawThings(*ship, *bullets, *asteroid, *enemy);
+
+  Controls(&*ship, &*bullets);
+
+  Move(&*ship, &*bullets, &*asteroid);
+
+  CheckBorder(&*ship, &*bullets, &*asteroid);
+    
+    // friction
+    ship->speed = mm::scaleV2(ship->speed, 0.995f);
+}
+
 int esat::main(int argc, char** argv) {
   Ship ship = {{ScreenX/2.0f, ScreenY/2.0f}, {0.0f, 0.0f}};
   Bullet *bullets = nullptr;
   Asteroids *asteroid = nullptr;
-  srand(time(nullptr));
+  UFO *enemy = nullptr;
   double current_time = 0.0;
   double last_time = 0.0;
   double fps = 60.0;
-  int screen = 0; // 0 login/registrar 1 menu de juego 2 juego
-
+  int screen = 2; // 0 login/registrar 1 menu de juego 2 juego
+  
+  srand(time(nullptr));
   esat::WindowInit(ScreenX, ScreenY);
   esat::WindowSetMouseVisibility(true);
-
+  printf("---------[Start Init]--------\n");
+  printf("[Init Asteroids]\n");
   initAsteroids(&asteroid, 5);
+  printf("[Init Enemy]\n");
+  initUFO(&enemy);
+
+  esat::DrawSetTextFont("./assets/VectorBattle-e9XO.ttf");
 
   while (!esat::IsSpecialKeyDown(esat::kSpecialKey_Escape) && esat::WindowIsOpened()) {
     last_time = esat::Time();
     esat::DrawBegin();
     esat::DrawClear(0, 0, 0);
-    
-    initShip(&ship);
 
-    DrawThings(ship, bullets, asteroid);
-
-    Controls(&ship, &bullets);
-
-    Move(&ship, &bullets, &asteroid);
-
-    CheckBorder(&ship, &bullets, &asteroid);
-    
-    // friction
-    ship.speed = mm::scaleV2(ship.speed, 0.995f);
+    switch(screen){
+      case 0:
+        LogIn();
+      break;
+      case 1:
+        Menu();
+      break;
+      case 2:
+        InGame(&ship, &bullets, &asteroid, &enemy);
+      break;    
+    } 
     
     esat::DrawEnd();
     esat::WindowFrame();
