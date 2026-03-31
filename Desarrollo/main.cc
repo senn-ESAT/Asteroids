@@ -170,7 +170,154 @@ void CheckBorder(Ship *ship, Bullet **bullets, Asteroids **aste){
   }
 }
 
-void LogIn(){}
+void UpdateFormSection(float *section){
+  section[2] = section[0] + 300;  // x p2
+  section[3] = section[1];        // y p2
+  section[4] = section[2];        // x p3
+  section[5] = section[1] + 35;   // y p3
+  section[6] = section[0];        // x p4
+  section[7] = section[1] + 35;   // y p4
+  section[8] = section[0];        // x p5
+  section[9] = section[1];        // y p6
+}
+
+void Register(int *form){
+  if(esat::IsSpecialKeyDown(esat::kSpecialKey_Down) && *form < 8){
+    *form+= 1;
+  }else if(esat::IsSpecialKeyDown(esat::kSpecialKey_Up) && *form > 0){
+    *form-= 1;
+  }
+
+  float *formSquare, *arrow;
+  formSquare = (float*)malloc(10*sizeof(float));
+  arrow = (float*)malloc(6*sizeof(float));
+  arrow[0] = 20;
+  arrow[1] = 130 + (50 * (*form));
+  arrow[2] = 40;
+  arrow[3] = arrow[1]+10;
+  arrow[4] = 20;
+  arrow[5] = arrow[1]+20;
+  printf("[FORM]: %d\n", *form);
+  formSquare[0] = ScreenX/2;  // x p1
+  formSquare[1] = 120;        // y p1
+  UpdateFormSection(&(*formSquare));
+
+  esat::DrawText(50, 150, "NAME:");
+  esat::DrawPath(formSquare, 5);
+
+  esat::DrawText(50, 200, "SURNAME:");
+  formSquare[1] += 50;
+  UpdateFormSection(&(*formSquare));
+  esat::DrawPath(formSquare, 5);
+
+  esat::DrawText(50, 250, "BIRTH YEAR:");
+  formSquare[1] += 50;
+  UpdateFormSection(&(*formSquare));
+  esat::DrawPath(formSquare, 5);
+
+  esat::DrawText(50, 300, "PROVINCE:");
+  formSquare[1] += 50;
+  UpdateFormSection(&(*formSquare));
+  esat::DrawPath(formSquare, 5);
+
+  esat::DrawText(50, 350, "NATION:");
+  formSquare[1] += 50;
+  UpdateFormSection(&(*formSquare));
+  esat::DrawPath(formSquare, 5);
+
+  esat::DrawText(50, 400, "NICKNAME:");
+  formSquare[1] += 50;
+  UpdateFormSection(&(*formSquare));
+  esat::DrawPath(formSquare, 5);
+
+  esat::DrawText(50, 450, "PASSWORD:");
+  formSquare[1] += 50;
+  UpdateFormSection(&(*formSquare));
+  esat::DrawPath(formSquare, 5);
+
+  esat::DrawText(50, 500, "CONFIRM PASSWORD:");
+  formSquare[1] += 50;
+  UpdateFormSection(&(*formSquare));
+  esat::DrawPath(formSquare, 5);
+  
+  formSquare[0] = ScreenX/2 - 110;      // x p1
+  formSquare[1] = 520;            // y p1
+  formSquare[2] = formSquare[0] + 150;  // x p2
+  formSquare[3] = formSquare[1];        // y p2
+  formSquare[4] = formSquare[2];        // x p3
+  formSquare[5] = formSquare[1] + 35;   // y p3
+  formSquare[6] = formSquare[0];        // x p4
+  formSquare[7] = formSquare[1] + 35;   // y p4
+  formSquare[8] = formSquare[0];        // x p5
+  formSquare[9] = formSquare[1];        // y p6
+  
+  if(*form < 7){
+    esat::DrawSolidPath(arrow, 3);
+    esat::DrawPath(formSquare, 5);
+  }
+  else{
+    esat::DrawSolidPath(formSquare, 5);
+    esat::DrawSetFillColor(0,0,0);
+
+  }
+  esat::DrawText(ScreenX/2 - 100, 550, "CONFIRM");
+  
+
+  // provincia, país, usuario y contraseña, 
+  // créditos de partidas y dirección de email.
+
+}
+
+void LogIn(){
+
+}
+
+void Account(int *option, int *form){
+  esat::DrawSetFillColor(255,255,255);
+  esat::DrawText(ScreenX/3 - 80, 80, "REGISTER");
+  esat::DrawText(ScreenX - ScreenX/3 - 50, 80, "LOGIN");
+  
+  float *selectionSquare;
+  selectionSquare = (float*)malloc(10*sizeof(float));
+
+  if(*option == 0){
+    selectionSquare[0] = ScreenX/3 - 90;  // x p1
+    selectionSquare[2] = selectionSquare[0] + 160;  // x p2
+  }else{
+    selectionSquare[0] = ScreenX - ScreenX/3 - 60;  // x p1
+    selectionSquare[2] = selectionSquare[0] + 110;  // x p2
+  }
+  selectionSquare[1] = 50;  // y p1
+  selectionSquare[3] = 50;  // y p2
+  selectionSquare[4] = selectionSquare[2];  // x p3
+  selectionSquare[5] = 85;  // y p3
+  selectionSquare[6] = selectionSquare[0];  // x p4
+  selectionSquare[7] = 85;  // y p4
+  selectionSquare[8] = selectionSquare[0];  // x p5
+  selectionSquare[9] = 50;  // y p6
+
+  esat::DrawPath(selectionSquare, 5);
+
+  switch(*option){
+    case 0:
+      Register(&(*form));
+    break;
+    case 1:
+      LogIn();
+    break;
+  }
+
+  if(esat::IsSpecialKeyDown(esat::kSpecialKey_Right) && *option == 0){
+    *option = 1;
+    *form = 0;
+  }else if(esat::IsSpecialKeyDown(esat::kSpecialKey_Left) && *option == 1){
+    *option = 0;
+    *form = 0;
+  }
+
+  
+
+}
 
 void Menu(){}
 
@@ -197,7 +344,7 @@ int esat::main(int argc, char** argv) {
   double current_time = 0.0;
   double last_time = 0.0;
   double fps = 60.0;
-  int screen = 2; // 0 login/registrar 1 menu de juego 2 juego
+  int screenSelector = 0, accountOption = 0, formSection = 0;   // 0 login/registrar 1 menu de juego 2 juego
   
   srand(time(nullptr));
   esat::WindowInit(ScreenX, ScreenY);
@@ -208,16 +355,17 @@ int esat::main(int argc, char** argv) {
   printf("[Init Enemy]\n");
   initUFO(&enemy);
 
-  esat::DrawSetTextFont("./assets/VectorBattle-e9XO.ttf");
+  esat::DrawSetTextFont("./assets/Hyperspace-JvEM.ttf");
+  esat::DrawSetTextSize(30);
 
   while (!esat::IsSpecialKeyDown(esat::kSpecialKey_Escape) && esat::WindowIsOpened()) {
     last_time = esat::Time();
     esat::DrawBegin();
     esat::DrawClear(0, 0, 0);
 
-    switch(screen){
+    switch(screenSelector){
       case 0:
-        LogIn();
+        Account(&accountOption, &formSection);
       break;
       case 1:
         Menu();
@@ -226,6 +374,8 @@ int esat::main(int argc, char** argv) {
         InGame(&ship, &bullets, &asteroid, &enemy);
       break;    
     } 
+
+
     
     esat::DrawEnd();
     esat::WindowFrame();
