@@ -32,20 +32,13 @@ void InsertBullet(Bullet **lista, mm::Vec2 pos, mm::Vec2 speed, int type){
 void ElimBullet(Bullet **lista, double time){
   Bullet *aux;
   aux = *lista;
-  printf("BULLET AMOUNT %d  -  ", BulletAmount(*(lista)));
-  printf("TIME DIFF: %f\n", (aux->timeFire + 2000) - esat::Time());
   // TO-DO no elimina el ultimo
-    printf(" ñ ");
     Bullet *b;
-    printf(" ñ ");
     for(b = *lista; b != nullptr; b = b->prox){
-    printf(" ñ ");
       if((b->timeFire + 2000) < time){
-        printf("CASO N");
         b->prox = nullptr;
       }
     }
   
-
   *lista = aux;
 }
