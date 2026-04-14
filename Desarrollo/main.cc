@@ -3,6 +3,8 @@
 #include <time.h>
 #include <math.h>
 #include <string.h>
+#include <conio.h>
+
 
 #include "esat/window.h"
 #include "esat/draw.h"

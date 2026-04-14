@@ -14,6 +14,15 @@ FILE *f;
 // string.append(string2) = string+string2
 
 void InitAccount(Account *user){
+  user->name =    nullptr;
+  user->surname = nullptr;
+  user->nick =    nullptr;
+  user->mail =    nullptr;
+  user->psw =     nullptr;
+  user->birth =   nullptr;
+  user->province= nullptr;
+  user->nation =  nullptr;
+
   user->name =    (char*)malloc(20*sizeof(char));
   user->surname = (char*)malloc(20*sizeof(char));
   user->nick =    (char*)malloc(20*sizeof(char));
@@ -22,6 +31,16 @@ void InitAccount(Account *user){
   user->birth =   (char*)malloc(20*sizeof(char));
   user->province= (char*)malloc(20*sizeof(char));
   user->nation =  (char*)malloc(20*sizeof(char));
+
+  user->name[0] =    '\0';
+  user->surname[0] = '\0';
+  user->nick[0] =    '\0';
+  user->mail[0] =    '\0';
+  user->psw[0] =     '\0';
+  user->birth[0] =   '\0';
+  user->province[0]= '\0';
+  user->nation[0] =  '\0';
+
 }
 
 int getID() {
@@ -43,14 +62,39 @@ void UpdateFormSection(float *section, float size){
   section[6] = section[0];        // x p4
   section[7] = section[1] + 35;   // y p4
   section[8] = section[0];        // x p5
-  section[9] = section[1];        // y p6
+  section[9] = section[1];        // y p5
+}
+
+void UpdateAccount(char **campo){
+  printf("[START UPDATE ACCOUNT]\n");
+  printf("[RESERVAR MEMORIA]\n");
+
+  char *c = nullptr;
+  c = (char*)malloc(sizeof(*campo) * sizeof(char));
+
+  int index = 0;
+  printf("[INPUT]\n");
+  while(!esat::IsSpecialKeyDown(esat::kSpecialKey_Enter)){
+    c[index] = getch();
+    printf(" GOT: %c");
+    index++;
+  }
+  printf("[SAVE BACK]\n");
+
+  strcpy(*campo, c);
+  campo[strlen(*campo)] = '\0';
+  printf("[END UPDATE ACCOUNT]\n");
 }
 
 void Register(int *form, Account *user){
+  printf("[VERTICAL MOVEMENT CHECK]\n");
+
   if(esat::IsSpecialKeyDown(esat::kSpecialKey_Down) && *form < 8){
+    printf("[GO DOWN]\n");
     *form += 1;
   }
 
+  printf("[INIT SHAPES]\n");
   float *formSquare, *arrow;
   // Indication arrow
   arrow = (float*)malloc(6*sizeof(float));
@@ -65,6 +109,9 @@ void Register(int *form, Account *user){
   formSquare[0] = ScreenX/2;  // x p1
   formSquare[1] = 120;        // y p1
   UpdateFormSection(&(*formSquare), 300);
+
+  printf("[START FORM]\n");
+
 
   esat::DrawText(50, 150, "NAME:");
   esat::DrawText(formSquare[6] + 10, formSquare[7] - 5, user->name);
@@ -112,37 +159,37 @@ void Register(int *form, Account *user){
   esat::DrawText(formSquare[6] + 10, formSquare[7] - 5, user->nation);
   esat::DrawPath(formSquare, 5);
 
-
-  
   formSquare[0] = ScreenX/2 - 110;    // x p1
   formSquare[1] = 520;                // y p1
   UpdateFormSection(&(*formSquare), 150);
-
   
-  // switch(*form){
-  //   case 0:
-  //     if(strlen(user->name) < 20){
-  //       int in = getchar(); 
-
-
-  //       //user->name = user->name.append();
-  //     }
-  //   break;
-  // }
-
+  printf("[END FORM]\n");
+  
   if(*form <= 7){
     esat::DrawSolidPath(arrow, 3);
     esat::DrawPath(formSquare, 5);
-    // if('\n' == getc()){
-    //   form++;
-    // }
   }
   else{
     esat::DrawSolidPath(formSquare, 5);
     esat::DrawSetFillColor(0,0,0);
   }
-
+  
   esat::DrawText(ScreenX/2 - 100, 550, "CONFIRM");
+
+  //////////////////// INPUT MANAGER ////////////////////
+
+  if(esat::IsSpecialKeyDown(esat::kSpecialKey_Space)){
+    switch (*form){
+      case 0: UpdateAccount(&user->name);     break;
+      case 1: UpdateAccount(&user->surname);  break;
+      case 2: UpdateAccount(&user->mail);     break;
+      case 3: UpdateAccount(&user->nick);     break;
+      case 4: UpdateAccount(&user->psw);      break;
+      case 5: UpdateAccount(&user->birth);    break;
+      case 6: UpdateAccount(&user->province); break;
+      case 7: UpdateAccount(&user->nation);   break;
+    }
+  }
 }
 
 void LogIn(int *form){
@@ -191,6 +238,8 @@ void LogIn(int *form){
 }
 
 void Usersmanagement(int *option, int *form, Account *user){
+  printf("-------[START USER MANAGEMENT]--------\n");
+
   esat::DrawSetFillColor(255,255,255);
   esat::DrawText(ScreenX/3 - 80, 80, "REGISTER");
   esat::DrawText(ScreenX - ScreenX/3 - 50, 80, "LOGIN");
@@ -219,20 +268,29 @@ void Usersmanagement(int *option, int *form, Account *user){
 
   switch(*option){
     case 0:
+      printf("[START REGISTER]\n");
       Register(&(*form), &(*user));
+      printf("[END REGISTER]\n");
     break;
     case 1:
+      printf("[START LOGIN]\n");
       LogIn(&(*form));
+      printf("[END LOGIN]\n");
     break;
   }
 
   if(esat::IsSpecialKeyDown(esat::kSpecialKey_Right) && *option == 0){
+    printf("[GO TO LOGIN]\n");
     *option = 1;
     *form = 0;
   }else if(esat::IsSpecialKeyDown(esat::kSpecialKey_Left) && *option == 1){
+    printf("[GO TO REGISTER]\n");
     *option = 0;
     *form = 0;
   }else if(esat::IsSpecialKeyDown(esat::kSpecialKey_Up) && *form > 0){
+    printf("[GO UP]\n");
     *form-= 1;
   }
+
+  printf("-------[END USER MANAGEMENT]--------\n");
 }
