@@ -169,6 +169,16 @@ int esat::main(int argc, char** argv) {
         InGame(&ship, &bullets, &asteroid, &enemy);
       break;    
     }
+
+    if(esat::IsSpecialKeyPressed(esat::kSpecialKey_Keypad_0)){
+      screenSelector = 0;
+    }
+    if(esat::IsSpecialKeyPressed(esat::kSpecialKey_Keypad_1)){
+      screenSelector = 1;
+    }
+    if(esat::IsSpecialKeyPressed(esat::kSpecialKey_Keypad_2)){
+      screenSelector = 2;
+    }
     
     esat::DrawEnd();
     esat::WindowFrame();

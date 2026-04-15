@@ -36,7 +36,11 @@ void ElimBullet(Bullet **lista, double time){
     Bullet *b;
     for(b = *lista; b != nullptr; b = b->prox){
       if((b->timeFire + 2000) < time){
-        b->prox = nullptr;
+        // if(BulletAmount(*lista) > 1){
+          b->prox = nullptr;
+        // }else{
+        //   b = nullptr; 
+        // }
       }
     }
   
