@@ -27,21 +27,23 @@ void DrawThings(Ship ship, Bullet *bullets, Asteroids *aste, UFO *enemy){
   esat::DrawSetStrokeColor(255, 255, 255);
   esat::DrawPath(ship.puntosNave, 4);
 
-  float *puntosDisparo;
-  puntosDisparo = (float*)malloc(10*sizeof(float));
-  Bullet *b;
-  for(b = bullets; b != nullptr; b = b->prox){
-    puntosDisparo[0] = b->p1.x - 1;
-    puntosDisparo[1] = b->p1.y;
-    puntosDisparo[2] = b->p1.x + 1;
-    puntosDisparo[3] = b->p1.y;
-    puntosDisparo[4] = b->p1.x;
-    puntosDisparo[5] = b->p1.y - 1;
-    puntosDisparo[6] = b->p1.x;
-    puntosDisparo[7] = b->p1.y + 1;
-    puntosDisparo[8] = b->p1.x - 1;
-    puntosDisparo[9] = b->p1.y;
-    esat::DrawSolidPath(puntosDisparo, 5);
+  if(bullets != nullptr){
+    float *puntosDisparo;
+    puntosDisparo = (float*)malloc(10*sizeof(float));
+    Bullet *b;
+    for(b = bullets; b != nullptr; b = b->prox){
+      puntosDisparo[0] = b->p1.x - 1;
+      puntosDisparo[1] = b->p1.y;
+      puntosDisparo[2] = b->p1.x + 1;
+      puntosDisparo[3] = b->p1.y;
+      puntosDisparo[4] = b->p1.x;
+      puntosDisparo[5] = b->p1.y - 1;
+      puntosDisparo[6] = b->p1.x;
+      puntosDisparo[7] = b->p1.y + 1;
+      puntosDisparo[8] = b->p1.x - 1;
+      puntosDisparo[9] = b->p1.y;
+      esat::DrawSolidPath(puntosDisparo, 5);
+    }
   }
 
   for(int i = 0; i < 5; i++){
@@ -94,14 +96,16 @@ void CheckBorder(Ship *ship, Bullet **bullets, Asteroids **aste){
   }
   colision = 0;
 
-  Bullet *b;
-  for(b = *bullets; b != nullptr; b = b->prox){
-    colision = checkBorderColisions(b->p1);
-    if(colision != 0){
-      pacman(&b->p1, &colision);
+  if(*bullets != nullptr){
+    Bullet *b;
+    for(b = *bullets; b != nullptr; b = b->prox){
+      colision = checkBorderColisions(b->p1);
+      if(colision != 0){
+        pacman(&b->p1, &colision);
+      }
     }
+    colision = 0;
   }
-   colision = 0;
 
   for(int i = 0; i < 5; i++){
     colision = checkBorderColisions((*aste)[i].pos);
@@ -114,18 +118,24 @@ void CheckBorder(Ship *ship, Bullet **bullets, Asteroids **aste){
 void Menu(){}
 
 void InGame(Ship *ship, Bullet **bullets, Asteroids **asteroid, UFO **enemy){
+  printf("\n\n[initShip -->");
   initShip(&(*ship));
-
+  
+  printf(" DRAW -->");
   DrawThings(*ship, *bullets, *asteroid, *enemy);
 
+  printf(" CONTROLS -->");
   Controls(&*ship, &*bullets);
 
+  printf(" MOVE -->");
   Move(&*ship, &*bullets, &*asteroid);
 
+  printf(" BORDERS -->");
   CheckBorder(&*ship, &*bullets, &*asteroid);
     
-    // friction
-    ship->speed = mm::scaleV2(ship->speed, 0.995f);
+  // friction
+  ship->speed = mm::scaleV2(ship->speed, 0.995f);
+  printf(" end]");
 }
 
 int esat::main(int argc, char** argv) {

@@ -23,7 +23,7 @@ void InitAccount(Account *user){
   user->province= nullptr;
   user->nation =  nullptr;
 
-  user->name =    (char*)malloc(20*sizeof(char));
+  user->name =    (char*)malloc(4*sizeof(char));
   user->surname = (char*)malloc(20*sizeof(char));
   user->nick =    (char*)malloc(20*sizeof(char));
   user->mail =    (char*)malloc(30*sizeof(char));
@@ -64,19 +64,24 @@ void UpdateFormSection(float *section, float size){
   section[9] = section[1];        // y p5
 }
 
-void UpdateAccount(char **campo){
+void UpdateAccount(char **campo, int nLetters){
   char input = 0;
   input = esat::GetNextPressedKey();
 
-  if(input != 0 && strlen(*campo) < sizeof(*campo) - 1){
-    printf("a");
-    if(strlen(*campo) == 0){
-    *campo[0] = input;
-    *campo[campo)+1] =  '\0';  
-    }else{
-      *campo[strlen(*campo)] = input;
-      *campo[strlen(*campo)] =  '\0';
-    }
+  if(input != 0 && nLetters > strlen(*campo)){
+    printf("\n[SIZEOF char]: %d ---- [SIZEOF campo]: %d ---- [nLetters]: %d\n", 
+      sizeof(char), sizeof(*campo), nLetters);
+    
+    int length = 0;
+    length = strlen(*campo);
+    
+    printf("[%d ", strlen(*campo));
+    printf("SAVE ");
+    *campo[length] = input;
+    printf("EOS ");
+    *campo[length + 1] =  '\0';
+    printf("END ");
+    printf("%d]", strlen(*campo));
   }
 }
 
@@ -168,14 +173,14 @@ void Register(int *form, Account *user){
   //////////////////// INPUT MANAGER ////////////////////
 
   switch (*form){
-    case 0: UpdateAccount(&user->name);     break;
-    case 1: UpdateAccount(&user->surname);  break;
-    case 2: UpdateAccount(&user->mail);     break;
-    case 3: UpdateAccount(&user->nick);     break;
-    case 4: UpdateAccount(&user->psw);      break;
-    case 5: UpdateAccount(&user->birth);    break;
-    case 6: UpdateAccount(&user->province); break;
-    case 7: UpdateAccount(&user->nation);   break;
+    case 0: UpdateAccount(&user->name, 3);     break;
+    case 1: UpdateAccount(&user->surname, 20);  break;
+    case 2: UpdateAccount(&user->mail, 30);     break;
+    case 3: UpdateAccount(&user->nick, 20);     break;
+    case 4: UpdateAccount(&user->psw, 20);      break;
+    case 5: UpdateAccount(&user->birth, 20);    break;
+    case 6: UpdateAccount(&user->province, 20); break;
+    case 7: UpdateAccount(&user->nation, 20);   break;
   }
 }
 

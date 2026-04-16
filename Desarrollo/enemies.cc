@@ -1,10 +1,9 @@
 struct UFO{
   mm::Vec2 pos, speed;
   esat::Vec3 *UFOPoints;
-  float size; // if small then strong shipe otherwise the dumb one
+  float size; // if small then strong ship otherwise the dumb one
   Bullet *enemyBullets;
 };
-
 
 void initUFO(UFO **inUFO){
   UFO *enemy = (UFO*)malloc(1*sizeof(UFO));
@@ -24,4 +23,12 @@ void initUFO(UFO **inUFO){
   enemy->UFOPoints[6] = { 2.0f, 2.0f, 1.0f};
 
   *inUFO = enemy;
+}
+
+void SpawnUFO(){
+
+}
+
+void MoveUFO(mm::Vec2 *velo){
+  
 }
