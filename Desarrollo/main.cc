@@ -46,27 +46,62 @@ void DrawThings(Ship ship, Bullet *bullets, Asteroids *aste, UFO *enemy){
     }
   }
 
+  if(enemy->enemyBullets != nullptr){
+    float *puntosDisparo;
+    puntosDisparo = (float*)malloc(10*sizeof(float));
+    Bullet *b;
+    for(b = enemy->enemyBullets; b != nullptr; b = b->prox){
+      puntosDisparo[0] = b->p1.x - 1;
+      puntosDisparo[1] = b->p1.y;
+      puntosDisparo[2] = b->p1.x + 1;
+      puntosDisparo[3] = b->p1.y;
+      puntosDisparo[4] = b->p1.x;
+      puntosDisparo[5] = b->p1.y - 1;
+      puntosDisparo[6] = b->p1.x;
+      puntosDisparo[7] = b->p1.y + 1;
+      puntosDisparo[8] = b->p1.x - 1;
+      puntosDisparo[9] = b->p1.y;
+      esat::DrawSolidPath(puntosDisparo, 5);
+    }
+  }
+
   for(int i = 0; i < 5; i++){
     esat::Mat3 a = MatAsteroid(aste[i].pos, aste[i].size);
     DrawAsteroid(a, aste[i].points);
   }
 
-  esat::Mat3 a = MatAsteroid(enemy->pos, enemy->size);
-  DrawAsteroid(a, enemy->UFOPoints);
+  if(enemy->alive){
+    esat::Mat3 a = MatAsteroid(enemy->pos, enemy->size);
+    DrawAsteroid(a, enemy->UFOPoints);
+  }
 }
 
-void Move(Ship *ship, Bullet **bullets, Asteroids **aste){
+void Move(Ship *ship, Bullet **bullets, Asteroids **aste, UFO *enemy){
 
   ship->pos = mm::sumVec2(ship->pos, ship->speed);
   
-  Bullet *b;
-  for(b = *bullets; b != nullptr; b = b->prox){
-    b->p1 = mm::sumVec2(b->p1, b->speed);
+  if(enemy->alive){
+    enemy->pos = mm::sumVec2(enemy->pos, enemy->speed);
+  }
+
+  if(BulletAmount(*bullets) != 0){
+    Bullet *b;
+    for(b = *bullets; b != nullptr; b = b->prox){
+      b->p1 = mm::sumVec2(b->p1, b->speed);
+    }
+  }
+
+  if(BulletAmount(enemy->enemyBullets) != 0){
+    Bullet *b;
+    for(b = enemy->enemyBullets; b != nullptr; b = b->prox){
+      b->p1 = mm::sumVec2(b->p1, b->speed);
+    }
   }
 
   for(int i = 0; i < 5; i++){
     (*aste)[i].pos = mm::sumVec2((*aste)[i].pos, (*aste)[i].speed);
   }
+  
 }
 
 int checkBorderColisions(mm::Vec2 coord){
@@ -79,7 +114,6 @@ int checkBorderColisions(mm::Vec2 coord){
 
 void pacman(mm::Vec2 *coord, int *way){
   switch(*way){
-
     case 1: coord->x = ScreenX; break;
     case 2: coord->x = 0;       break;
     case 3: coord->y = ScreenY; break;
@@ -88,7 +122,7 @@ void pacman(mm::Vec2 *coord, int *way){
   *way = 0;
 }
 
-void CheckBorder(Ship *ship, Bullet **bullets, Asteroids **aste){
+void CheckBorder(Ship *ship, Bullet **bullets, Asteroids **aste, UFO **enemy){
   int colision = 0;
   colision = checkBorderColisions(ship->pos);
   if(colision != 0){
@@ -103,8 +137,8 @@ void CheckBorder(Ship *ship, Bullet **bullets, Asteroids **aste){
       if(colision != 0){
         pacman(&b->p1, &colision);
       }
+      colision = 0;
     }
-    colision = 0;
   }
 
   for(int i = 0; i < 5; i++){
@@ -112,26 +146,40 @@ void CheckBorder(Ship *ship, Bullet **bullets, Asteroids **aste){
     if(colision != 0){
       pacman(&(*aste)[i].pos, &colision);
     }
+    colision = 0;
+  }
+
+  if((*enemy)->alive){
+    colision = checkBorderColisions((*enemy)->pos);
+    if(colision != 0){
+      pacman(&(*enemy)->pos, &colision);
+    }
+    colision = 0;
   }
 }
 
 void Menu(){}
 
-void InGame(Ship *ship, Bullet **bullets, Asteroids **asteroid, UFO **enemy){
+void InGame(Ship *ship, Bullet **bullets, Asteroids **asteroid, UFO *enemy){
   printf("\n\n[initShip -->");
   initShip(&(*ship));
+  SpawnUFO(&(*enemy));
   
   printf(" DRAW -->");
-  DrawThings(*ship, *bullets, *asteroid, *enemy);
+  DrawThings(*ship, *bullets, *asteroid, enemy);
 
   printf(" CONTROLS -->");
   Controls(&*ship, &*bullets);
+  if(enemy->alive){
+    printf(" UFO --> ");
+    ManageUFO(&(*enemy), ship->pos);
+  }
 
   printf(" MOVE -->");
-  Move(&*ship, &*bullets, &*asteroid);
+  Move(&*ship, &*bullets, &*asteroid, &*enemy);
 
   printf(" BORDERS -->");
-  CheckBorder(&*ship, &*bullets, &*asteroid);
+  CheckBorder(&*ship, &*bullets, &*asteroid, &enemy);
     
   // friction
   ship->speed = mm::scaleV2(ship->speed, 0.995f);
@@ -139,17 +187,22 @@ void InGame(Ship *ship, Bullet **bullets, Asteroids **asteroid, UFO **enemy){
 }
 
 int esat::main(int argc, char** argv) {
-  Ship ship = {{ScreenX/2.0f, ScreenY/2.0f}, {0.0f, 0.0f}};
-  Bullet *bullets = nullptr;
-  Asteroids *asteroid = nullptr;
-  UFO *enemy = nullptr;
-  Account user;
+  //////////////LOGIC/////////////
   double current_time = 0.0, last_time = 0.0, fps = 60.0;
   int screenSelector = 0, accountOption = 0, formSection = 0;   // 0 login/registrar 1 menu de juego 2 juego
+  ////////SOLO 1 DE ESTOS/////////
+  Ship ship = {{ScreenX/2.0f, ScreenY/2.0f}, {0.0f, 0.0f}};
+  UFO enemy;
+  Account user;
+  ////////////PUNTEROS////////////
+  Bullet *bullets = nullptr;
+  Asteroids *asteroid = nullptr;
   
   srand(time(nullptr));
   esat::WindowInit(ScreenX, ScreenY);
   esat::WindowSetMouseVisibility(true);
+
+
   printf("---------[START INIT]--------\n");
   printf("[INIT ASTEROID]\n");
   initAsteroids(&asteroid, 5);

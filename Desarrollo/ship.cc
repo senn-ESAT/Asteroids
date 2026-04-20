@@ -56,6 +56,6 @@ void Controls(Ship *ship, Bullet **bullets){
   }
   if(BulletAmount(*bullets) != 0){
     printf("ELIM");
-    ElimBullet(&(*bullets), esat::Time());
+    ElimBullet(&(*bullets));
   }
 }

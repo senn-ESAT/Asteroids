@@ -1,7 +1,7 @@
 struct Bullet{
   mm::Vec2 p1, speed;
-  double timeFire;
   Bullet *prox;
+  double timeFire;
   bool from; // 0 disparo player 1 disparo alien
 };
 
@@ -19,6 +19,7 @@ int BulletAmount(Bullet *lista){
 }
 
 void InsertBullet(Bullet **lista, mm::Vec2 pos, mm::Vec2 speed, int type){
+  printf("\n[ADDING A BULLET]\n");
   Bullet *temp = nullptr;
   temp = (Bullet*)malloc(1 * sizeof(Bullet));
 
@@ -28,14 +29,15 @@ void InsertBullet(Bullet **lista, mm::Vec2 pos, mm::Vec2 speed, int type){
   temp->from = type;
 
   temp->timeFire = esat::Time();
-  mm::Vec2Print(temp->speed);
 
   (*lista) = temp;
+  printf("[SUCCESSFULY ADDED A BULLET]\n");
 }
 
-void ElimBullet(Bullet **lista, double time){
+void ElimBullet(Bullet **lista){
   Bullet *aux;
   aux = *lista;
+  double time = esat::Time();
   
   printf(" BULLET AMOUNT: %d", BulletAmount(*lista));
   if(BulletAmount(*lista) > 1){
