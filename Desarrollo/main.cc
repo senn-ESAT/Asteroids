@@ -24,9 +24,11 @@ const float max_speed = 7.0f;
 #include "./ship.cc"
 
 void DrawThings(Ship ship, Bullet *bullets, Asteroids *aste, UFO *enemy){
+  printf("1");
   esat::DrawSetStrokeColor(255, 255, 255);
   esat::DrawPath(ship.puntosNave, 4);
-
+  
+  printf("2");
   if(bullets != nullptr){
     float *puntosDisparo;
     puntosDisparo = (float*)malloc(10*sizeof(float));
@@ -46,38 +48,41 @@ void DrawThings(Ship ship, Bullet *bullets, Asteroids *aste, UFO *enemy){
     }
   }
 
-  if(enemy->enemyBullets != nullptr){
-    float *puntosDisparo;
-    puntosDisparo = (float*)malloc(10*sizeof(float));
-    Bullet *b;
-    for(b = enemy->enemyBullets; b != nullptr; b = b->prox){
-      puntosDisparo[0] = b->p1.x - 1;
-      puntosDisparo[1] = b->p1.y;
-      puntosDisparo[2] = b->p1.x + 1;
-      puntosDisparo[3] = b->p1.y;
-      puntosDisparo[4] = b->p1.x;
-      puntosDisparo[5] = b->p1.y - 1;
-      puntosDisparo[6] = b->p1.x;
-      puntosDisparo[7] = b->p1.y + 1;
-      puntosDisparo[8] = b->p1.x - 1;
-      puntosDisparo[9] = b->p1.y;
-      esat::DrawSolidPath(puntosDisparo, 5);
-    }
-  }
-
+  printf("3");
   for(int i = 0; i < 5; i++){
     esat::Mat3 a = MatAsteroid(aste[i].pos, aste[i].size);
-    DrawAsteroid(a, aste[i].points);
+    DrawAsteroid(a, aste[i].points, 7);
   }
 
+  printf("4");
   if(enemy->alive){
     esat::Mat3 a = MatAsteroid(enemy->pos, enemy->size);
-    DrawAsteroid(a, enemy->UFOPoints);
+    DrawAsteroid(a, enemy->UFOPoints, 12);
+    
+    printf("5");
+    if(BulletAmount(enemy->enemyBullets) != 0){
+      float *puntosDisparo;
+      puntosDisparo = (float*)malloc(10*sizeof(float));
+      Bullet *b;
+      for(b = enemy->enemyBullets; b != nullptr; b = b->prox){
+        puntosDisparo[0] = b->p1.x - 1;
+        puntosDisparo[1] = b->p1.y;
+        puntosDisparo[2] = b->p1.x + 1;
+        puntosDisparo[3] = b->p1.y;
+        puntosDisparo[4] = b->p1.x;
+        puntosDisparo[5] = b->p1.y - 1;
+        puntosDisparo[6] = b->p1.x;
+        puntosDisparo[7] = b->p1.y + 1;
+        puntosDisparo[8] = b->p1.x - 1;
+        puntosDisparo[9] = b->p1.y;
+        esat::DrawSolidPath(puntosDisparo, 5);
+      }
+    }
   }
+  printf("6");
 }
 
 void Move(Ship *ship, Bullet **bullets, Asteroids **aste, UFO *enemy){
-
   ship->pos = mm::sumVec2(ship->pos, ship->speed);
   
   if(enemy->alive){
@@ -91,7 +96,7 @@ void Move(Ship *ship, Bullet **bullets, Asteroids **aste, UFO *enemy){
     }
   }
 
-  if(BulletAmount(enemy->enemyBullets) != 0){
+  if(enemy->alive && BulletAmount(enemy->enemyBullets) != 0){
     Bullet *b;
     for(b = enemy->enemyBullets; b != nullptr; b = b->prox){
       b->p1 = mm::sumVec2(b->p1, b->speed);
@@ -101,7 +106,6 @@ void Move(Ship *ship, Bullet **bullets, Asteroids **aste, UFO *enemy){
   for(int i = 0; i < 5; i++){
     (*aste)[i].pos = mm::sumVec2((*aste)[i].pos, (*aste)[i].speed);
   }
-  
 }
 
 int checkBorderColisions(mm::Vec2 coord){
@@ -152,7 +156,12 @@ void CheckBorder(Ship *ship, Bullet **bullets, Asteroids **aste, UFO **enemy){
   if((*enemy)->alive){
     colision = checkBorderColisions((*enemy)->pos);
     if(colision != 0){
-      pacman(&(*enemy)->pos, &colision);
+      if(colision == 1 || colision == 2){
+        (*enemy)->alive = false;
+        (*enemy)->TimeDeath = esat::Time();
+      }else{
+        pacman(&(*enemy)->pos, &colision);
+      }
     }
     colision = 0;
   }

@@ -38,9 +38,9 @@ void Controls(Ship *ship, Bullet **bullets){
 
   //direction
   if(esat::IsKeyPressed('d') || esat::IsKeyPressed('D')){
-    ship->angulo += 0.08f;
+    ship->angulo += 0.07f;
   }else if(esat::IsKeyPressed('a') || esat::IsKeyPressed('A')){
-    ship->angulo -= 0.08f;
+    ship->angulo -= 0.07f;
   }
   // shoot
   if(esat::IsSpecialKeyDown(esat::kSpecialKey_Space) && 5 > BulletAmount((*bullets))){

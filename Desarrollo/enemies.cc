@@ -14,110 +14,111 @@ void initUFO(UFO *enemy){
 }
 
 void SpawnUFO(UFO *enemy){
-  if(!enemy->alive && enemy->TimeDeath + 10000 < esat::Time()){ //10 sec after death it respawn
-    
+  printf("[%d]", enemy->alive);
+  if(enemy->alive == false && enemy->TimeDeath + 5000 < esat::Time()){ //10 sec after death it respawn
+    printf("a");
     enemy->alive = true;
     enemy->fireTime = esat::Time();
+    enemy->newDirection = esat::Time();
 
+    printf("b");
     if(rand()%2){ // RIGHT
       enemy->pos = {0.0f, 50 + ((float)(rand()) / (float)(ScreenY - 100))}; // 0,50-550
-      enemy->speed = { 1.0f, 0.0f};
+      enemy->speed = { 2.0f, 0.0f};
     }else{  // LEFT
       enemy->pos = {ScreenX, 50 + ((float)(rand()) / (float)(ScreenY - 100))}; // 0,50-550
-      enemy->speed = { -1.0f, 0.0f};
+      enemy->speed = { -2.0f, 0.0f};
     }
-    enemy->size = 5.0f;
-
-    //int randomType = rand()%10;
-    //if(randomType < enemy->rate){
+    
+    int randomType = rand()%10;
+    if(randomType < enemy->rate){
+      enemy->type = 0;
+      enemy->size = 4.0f;
+    }else{
       enemy->type = 1;
-    // }else{
-    //   enemy->type = 1;
-    // }
-
-    enemy->UFOPoints = (esat::Vec3*)malloc(7*sizeof(esat::Vec3));
-    // TO-DO encontrar los puntos correctos
-    switch (enemy->type)    {
-      case 0:
-        enemy->UFOPoints[0] = { 0.0f, 0.0f, 1.0f};
-        enemy->UFOPoints[1] = { 2.0f, 0.0f, 1.0f};
-        enemy->UFOPoints[2] = { 2.0f, 2.0f, 1.0f};
-        enemy->UFOPoints[3] = { 0.0f, 2.0f, 1.0f};
-        enemy->UFOPoints[4] = { 0.0f, 0.0f, 1.0f};
-        enemy->UFOPoints[5] = { 2.0f, 0.0f, 1.0f};
-        enemy->UFOPoints[6] = { 2.0f, 2.0f, 1.0f};
-      break;
-      case 1:
-        enemy->UFOPoints[0] = { 0.0f, 0.0f, 1.0f};
-        enemy->UFOPoints[1] = { 2.0f, 0.0f, 1.0f};
-        enemy->UFOPoints[2] = { 2.0f, 2.0f, 1.0f};
-        enemy->UFOPoints[3] = { 0.0f, 2.0f, 1.0f};
-        enemy->UFOPoints[4] = { 0.0f, 0.0f, 1.0f};
-        enemy->UFOPoints[5] = { 2.0f, 0.0f, 1.0f};
-        enemy->UFOPoints[6] = { 2.0f, 2.0f, 1.0f};
-      break;
+      enemy->size = 2.0f;
     }
+
+    enemy->UFOPoints = (esat::Vec3*)malloc(12*sizeof(esat::Vec3));
+
+    enemy->UFOPoints[0] = { 2.0f, -1.0f,  1.0f};
+    enemy->UFOPoints[1] = { -2.0f, -1.0f,   1.0f};
+    enemy->UFOPoints[2] = { -5.0f, 1.0f,  1.0f};
+    enemy->UFOPoints[3] = { 5.0f, 1.0f, 1.0f};
+    enemy->UFOPoints[4] = { 2.0f, 3.0f, 1.0f};
+    enemy->UFOPoints[5] = { -2.0f, 3.0f,  1.0f};
+    enemy->UFOPoints[6] = { -5.0f, 1.0f,  1.0f};
+    enemy->UFOPoints[7] = { -2.0f, -1.0f,   1.0f};
+    enemy->UFOPoints[8] = { -1.0f, -3.0f,   1.0f};
+    enemy->UFOPoints[9] = { 1.0f, -3.0f,  1.0f};
+    enemy->UFOPoints[10]= { 2.0f, -1.0f,  1.0f};
+    enemy->UFOPoints[11]= { 5.0f, 1.0f, 1.0f};
   }
 }
 
 void MoveUFO(mm::Vec2 *velo, mm::Vec2 *pos){
-  printf("\nPOS--> ");
   mm::Vec2Print(*pos);
-  printf("SPEED-->");
   mm::Vec2Print(*velo);
   
   *pos = mm::sumVec2(*pos, *velo);
 }
 
+void UFOChageDir(mm::Vec2 *velo){
+  if(velo->y != 0){
+    velo->y = 0;
+  }else if(rand()%2 == 0){
+    velo->y = 1.0f;
+  }else{
+    velo->y = -1.0f;
+  }
+}
+
 void ManageUFO(UFO *enemy, mm::Vec2 playerPos){
-  printf("TYPE: %d", enemy->type);
   switch (enemy->type){
     case 0:
-      printf("BRUH");
-      if(enemy->fireTime + 750 < esat::Time()){
-        printf("||||||||||||||||||||||||");
-        mm::Vec2 bpos = enemy->pos;
+      if(enemy->fireTime + 500 < esat::Time()){
         mm::Vec2 dir;
+
+        // random dir of the bullet
         switch(rand()%8){
-          case 0: dir = {1.0f,0.0f}; break;
-          case 1: dir = {0.0f,1.0f}; break;
-          case 2: dir = {-1.0f,0.0f}; break;
-          case 3: dir = {0.0f,-1.0f}; break;
-          case 4: dir = {0.5f,0.5f}; break;
-          case 5: dir = {-0.5f,0.5f}; break;
-          case 6: dir = {0.5f,-0.5f}; break;
-          case 7: dir = {-0.5f,-0.5f}; break;
+          case 0: dir = {1.0f,0.0f};    break;
+          case 1: dir = {0.0f,1.0f};    break;
+          case 2: dir = {-1.0f,0.0f};   break;
+          case 3: dir = {0.0f,-1.0f};   break;
+          case 4: dir = {0.5f,0.5f};    break;
+          case 5: dir = {-0.5f,0.5f};   break;
+          case 6: dir = {0.5f,-0.5f};   break;
+          case 7: dir = {-0.5f,-0.5f};  break;
         }
+        
         dir = normalize(dir);
         
-        mm::Vec2 bspeed;
-        bspeed = mm::scaleV2(dir, 7.5f);
+        mm::Vec2 bspeed = mm::scaleV2(dir, 7.5f);
         
-        printf("[FIRE]\n");
-        InsertBullet(&enemy->enemyBullets, bpos, bspeed, 1);
+        InsertBullet(&enemy->enemyBullets, enemy->pos, bspeed, 1);
         enemy->fireTime = esat::Time();
       }
     break;
     
     case 1:
-      if(enemy->fireTime + 750 < esat::Time()){
-        printf("---------------------");
-
-        mm::Vec2 bpos = enemy->pos;
+      if(enemy->fireTime + 500 < esat::Time()){
         mm::Vec2 dir;
 
         dir = mm::subVec2(playerPos, enemy->pos);
-
         dir = normalize(dir);
         
-        mm::Vec2 bspeed;
-        bspeed = mm::scaleV2(dir, 7.5f);
+        mm::Vec2 bspeed = mm::scaleV2(dir, 7.5f);
         
         printf("[FIRE]\n");
-        InsertBullet(&enemy->enemyBullets, bpos, bspeed, 1);
+        InsertBullet(&enemy->enemyBullets, enemy->pos, bspeed, 1);
         enemy->fireTime = esat::Time();
       }
     break;
+  }
+  if(enemy->newDirection + 1500 < esat::Time()){
+    UFOChageDir(&enemy->speed);
+
+    enemy->newDirection = esat::Time();
   }
 
   if(BulletAmount(enemy->enemyBullets) != 0){
