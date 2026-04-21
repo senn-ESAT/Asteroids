@@ -24,13 +24,13 @@ void InitAccount(Account *user){
   user->nation =  nullptr;
 
   user->name =    (char*)malloc(4*sizeof(char));
-  user->surname = (char*)malloc(20*sizeof(char));
-  user->nick =    (char*)malloc(20*sizeof(char));
-  user->mail =    (char*)malloc(30*sizeof(char));
-  user->psw =     (char*)malloc(20*sizeof(char));
-  user->birth =   (char*)malloc(20*sizeof(char));
-  user->province= (char*)malloc(20*sizeof(char));
-  user->nation =  (char*)malloc(20*sizeof(char));
+  user->surname = (char*)malloc(17*sizeof(char));
+  user->nick =    (char*)malloc(17*sizeof(char));
+  user->mail =    (char*)malloc(17*sizeof(char));
+  user->psw =     (char*)malloc(17*sizeof(char));
+  user->birth =   (char*)malloc(17*sizeof(char));
+  user->province= (char*)malloc(17*sizeof(char));
+  user->nation =  (char*)malloc(17*sizeof(char));
 
   user->name[0] =    '\0';
   user->surname[0] = '\0';
@@ -65,23 +65,21 @@ void UpdateFormSection(float *section, float size){
 }
 
 void UpdateAccount(char **campo, int nLetters){
-  char input = 0;
-  input = esat::GetNextPressedKey();
-
-  if(input != 0 && nLetters > strlen(*campo)){
-    printf("\n[SIZEOF char]: %d ---- [SIZEOF campo]: %d ---- [nLetters]: %d\n", 
-      sizeof(char), sizeof(*campo), nLetters);
-    
-    int length = 0;
-    length = strlen(*campo);
-    
-    printf("[%d ", strlen(*campo));
-    printf("SAVE ");
-    *campo[length] = input;
-    printf("EOS ");
-    *campo[length + 1] =  '\0';
-    printf("END ");
-    printf("%d]", strlen(*campo));
+  char input = esat::GetNextPressedKey();
+  printf("%d\n", input);
+  // If input detected
+  if(input != 0){
+    int length = strlen(*campo);
+    if(length < nLetters){
+      (*campo)[length] = input;
+      (*campo)[length + 1] = '\0';
+    }
+  }
+  if (esat::IsSpecialKeyDown(esat::kSpecialKey_Backspace)){
+    int length = strlen(*campo);
+    if(length > 0){
+      (*campo)[length - 1] = '\0';
+    }
   }
 }
 
@@ -100,12 +98,12 @@ void Register(int *form, Account *user){
   arrow[3] = arrow[1]+10;
   arrow[4] = 20;
   arrow[5] = arrow[1]+20;
-  
+  // the square of both form section and buttons
   formSquare = (float*)malloc(10*sizeof(float));
   formSquare[0] = ScreenX/2;  // x p1
   formSquare[1] = 120;        // y p1
+  // i reuse the same shape and this help me change the shape and position
   UpdateFormSection(&(*formSquare), 300);
-
 
 
   esat::DrawText(50, 150, "NAME:");
@@ -118,37 +116,37 @@ void Register(int *form, Account *user){
   esat::DrawText(formSquare[6] + 10, formSquare[7] - 5, user->surname);
   esat::DrawPath(formSquare, 5);
 
-  esat::DrawText(50, 500, "EMAIL:");
+  esat::DrawText(50, 250, "NICKNAME:");
+  formSquare[1] += 50;
+  UpdateFormSection(&(*formSquare), 300);
+  esat::DrawText(formSquare[6] + 10, formSquare[7] - 5, user->nick);
+  esat::DrawPath(formSquare, 5);
+  
+  esat::DrawText(50, 300, "EMAIL:");
   formSquare[1] += 50;
   UpdateFormSection(&(*formSquare), 300);
   esat::DrawText(formSquare[6] + 10, formSquare[7] - 5, user->mail);
   esat::DrawPath(formSquare, 5);
 
-  esat::DrawText(50, 400, "NICKNAME:");
-  formSquare[1] += 50;
-  UpdateFormSection(&(*formSquare), 300);
-  esat::DrawText(formSquare[6] + 10, formSquare[7] - 5, user->nick);
-  esat::DrawPath(formSquare, 5);
-
-  esat::DrawText(50, 450, "PASSWORD:");
+  esat::DrawText(50, 350, "PASSWORD:");
   formSquare[1] += 50;
   UpdateFormSection(&(*formSquare), 300);
   esat::DrawText(formSquare[6] + 10, formSquare[7] - 5, user->psw);
   esat::DrawPath(formSquare, 5);
 
-  esat::DrawText(50, 250, "BIRTH YEAR:");
+  esat::DrawText(50, 400, "BIRTH YEAR:");
   formSquare[1] += 50;
   UpdateFormSection(&(*formSquare), 300);
   esat::DrawText(formSquare[6] + 10, formSquare[7] - 5, user->birth);
   esat::DrawPath(formSquare, 5);
 
-  esat::DrawText(50, 300, "PROVINCE:");
+  esat::DrawText(50, 450, "PROVINCE:");
   formSquare[1] += 50;
   UpdateFormSection(&(*formSquare), 300);
   esat::DrawText(formSquare[6] + 10, formSquare[7] - 5, user->province);
   esat::DrawPath(formSquare, 5);
 
-  esat::DrawText(50, 350, "NATION:");
+  esat::DrawText(50, 500, "NATION:");
   formSquare[1] += 50;
   UpdateFormSection(&(*formSquare), 300);
   esat::DrawText(formSquare[6] + 10, formSquare[7] - 5, user->nation);
@@ -158,7 +156,7 @@ void Register(int *form, Account *user){
   formSquare[1] = 520;                // y p1
   UpdateFormSection(&(*formSquare), 150);
   
-  
+  // this indicate if the user is on the confirm button or not
   if(*form <= 7){
     esat::DrawSolidPath(arrow, 3);
     esat::DrawPath(formSquare, 5);
@@ -173,14 +171,14 @@ void Register(int *form, Account *user){
   //////////////////// INPUT MANAGER ////////////////////
 
   switch (*form){
-    case 0: UpdateAccount(&user->name, 3);     break;
-    case 1: UpdateAccount(&user->surname, 20);  break;
-    case 2: UpdateAccount(&user->mail, 30);     break;
-    case 3: UpdateAccount(&user->nick, 20);     break;
-    case 4: UpdateAccount(&user->psw, 20);      break;
-    case 5: UpdateAccount(&user->birth, 20);    break;
-    case 6: UpdateAccount(&user->province, 20); break;
-    case 7: UpdateAccount(&user->nation, 20);   break;
+    case 0: UpdateAccount(&user->name, 16);     break;
+    case 1: UpdateAccount(&user->surname, 16);  break;
+    case 2: UpdateAccount(&user->nick, 3);      break;
+    case 3: UpdateAccount(&user->mail, 16);     break;
+    case 4: UpdateAccount(&user->psw, 16);      break;
+    case 5: UpdateAccount(&user->birth, 16);    break;
+    case 6: UpdateAccount(&user->province, 16); break;
+    case 7: UpdateAccount(&user->nation, 16);   break;
   }
 }
 
@@ -227,6 +225,11 @@ void LogIn(int *form){
   }
 
   esat::DrawText(ScreenX/2 - 100, 550, "CONFIRM");
+
+  // switch (*form){
+  //   case 0: UpdateAccount(&user->name, 16);     break;
+  //   case 1: UpdateAccount(&user->surname, 16);  break;
+  // }
 }
 
 void Usersmanagement(int *option, int *form, Account *user){
