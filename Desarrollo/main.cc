@@ -54,13 +54,13 @@ void DrawThings(Ship ship, Bullet *bullets, Asteroids *aste, UFO *enemy){
     DrawAsteroid(a, aste[i].points, 7);
   }
 
-  printf("4");
   if(enemy->alive){
+    printf("4");
     esat::Mat3 a = MatAsteroid(enemy->pos, enemy->size);
     DrawAsteroid(a, enemy->UFOPoints, 12);
-    
-    printf("5");
+    printf(" BULLETS: %d ", BulletAmount(enemy->enemyBullets));
     if(BulletAmount(enemy->enemyBullets) != 0){
+      printf("5");
       float *puntosDisparo;
       puntosDisparo = (float*)malloc(10*sizeof(float));
       Bullet *b;
@@ -79,7 +79,7 @@ void DrawThings(Ship ship, Bullet *bullets, Asteroids *aste, UFO *enemy){
       }
     }
   }
-  printf("6");
+  printf("DRAW END ");
 }
 
 void Move(Ship *ship, Bullet **bullets, Asteroids **aste, UFO *enemy){
@@ -132,7 +132,7 @@ void CheckBorder(Ship *ship, Bullet **bullets, Asteroids **aste, UFO **enemy){
   if(colision != 0){
     pacman(&ship->pos, &colision);
   }
-  colision = 0;
+
 
   if(*bullets != nullptr){
     Bullet *b;
@@ -141,7 +141,6 @@ void CheckBorder(Ship *ship, Bullet **bullets, Asteroids **aste, UFO **enemy){
       if(colision != 0){
         pacman(&b->p1, &colision);
       }
-      colision = 0;
     }
   }
 
@@ -150,7 +149,6 @@ void CheckBorder(Ship *ship, Bullet **bullets, Asteroids **aste, UFO **enemy){
     if(colision != 0){
       pacman(&(*aste)[i].pos, &colision);
     }
-    colision = 0;
   }
 
   if((*enemy)->alive){
@@ -163,7 +161,15 @@ void CheckBorder(Ship *ship, Bullet **bullets, Asteroids **aste, UFO **enemy){
         pacman(&(*enemy)->pos, &colision);
       }
     }
-    colision = 0;
+    if(BulletAmount((*enemy)->enemyBullets) != 0){
+      Bullet *b;
+      for(b = (*enemy)->enemyBullets; b != nullptr; b = b->prox){
+        colision = checkBorderColisions(b->p1);
+        if(colision != 0){
+          pacman(&b->p1, &colision);
+        }
+      }
+    }    
   }
 }
 
@@ -198,7 +204,7 @@ void InGame(Ship *ship, Bullet **bullets, Asteroids **asteroid, UFO *enemy){
 int esat::main(int argc, char** argv) {
   //////////////LOGIC/////////////
   double current_time = 0.0, last_time = 0.0, fps = 60.0;
-  int screenSelector = 0, accountOption = 0, formSection = 0;   // 0 login/registrar 1 menu de juego 2 juego
+  int screenSelector = 0, accountOption = 0, formSection = 0, lvl = 0;   // 0 login/registrar 1 menu de juego 2 juego
   ////////SOLO 1 DE ESTOS/////////
   Ship ship = {{ScreenX/2.0f, ScreenY/2.0f}, {0.0f, 0.0f}};
   UFO enemy;
@@ -232,7 +238,7 @@ int esat::main(int argc, char** argv) {
 
     switch(screenSelector){
       case 0:
-        Usersmanagement(&accountOption, &formSection, &user);
+        Usersmanagement(&screenSelector, &accountOption, &formSection, &user);
       break;
       case 1:
         Menu();

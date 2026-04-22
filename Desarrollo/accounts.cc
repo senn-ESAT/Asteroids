@@ -1,5 +1,5 @@
 struct Account{
-  int id, credit;
+  int credit, points;
   char  *name,
         *surname,
         *mail,
@@ -10,7 +10,6 @@ struct Account{
         *psw;
 };
 
-FILE *f;
 // string.append(string2) = string+string2
 
 void InitAccount(Account *user){
@@ -42,16 +41,16 @@ void InitAccount(Account *user){
   user->nation[0] =  '\0';
 }
 
-int getID() {
-  Account last;
+// int getID() {
+//   Account last;
 
-  if (fseek(f, -sizeof(Account), SEEK_END) != 0){
-    return 0;
-  }
+//   if (fseek(f, -sizeof(Account), SEEK_END) != 0){
+//     return 0;
+//   }
 
-  fread(&last, sizeof(Account), 1, f);
-  return last.id + 1;
-}
+//   fread(&last, sizeof(Account), 1, f);
+//   return last.id + 1;
+// }
 
 void UpdateFormSection(float *section, float size){
   section[2] = section[0] + size; // x p2
@@ -66,7 +65,6 @@ void UpdateFormSection(float *section, float size){
 
 void UpdateAccount(char **campo, int nLetters){
   char input = esat::GetNextPressedKey();
-  printf("%d\n", input);
   // If input detected
   if(input != 0){
     int length = strlen(*campo);
@@ -75,6 +73,7 @@ void UpdateAccount(char **campo, int nLetters){
       (*campo)[length + 1] = '\0';
     }
   }
+  // delete
   if (esat::IsSpecialKeyDown(esat::kSpecialKey_Backspace)){
     int length = strlen(*campo);
     if(length > 0){
@@ -83,7 +82,47 @@ void UpdateAccount(char **campo, int nLetters){
   }
 }
 
-void Register(int *form, Account *user){
+int CheckValidity(Account **users, bool option){
+  FILE *f1;
+  
+  if(option){
+    bool found = false;
+    Account temp;
+    temp.name =    (char*)malloc(4*sizeof(char));
+    temp.surname = (char*)malloc(17*sizeof(char));
+    temp.nick =    (char*)malloc(17*sizeof(char));
+    temp.mail =    (char*)malloc(17*sizeof(char));
+    temp.psw =     (char*)malloc(17*sizeof(char));
+    temp.birth =   (char*)malloc(17*sizeof(char));
+    temp.province= (char*)malloc(17*sizeof(char));
+    temp.nation =  (char*)malloc(17*sizeof(char));
+
+    if((f1 = fopen("save.dat", "rb")) != nullptr){
+      printf("OPEN - ");
+      while(fread(&temp, sizeof(Account), 1, f1) != 0 && found == false){
+        if(temp.mail == (*users)->mail
+        && temp.psw == (*users)->psw){
+          *(*users) = temp;
+          found = true;
+          printf("YAY");
+        }
+      }
+      fclose(f1);
+    }
+    if(found){
+      printf("IT WORKED\n");
+      return 1;
+    }else{
+      printf("NO MATCH\n");
+      return 1;
+    }
+  }else{
+    // read and if not find then save
+  }
+  return 0;
+}
+
+void Register(int *form, Account *user, int *screen){
 
   if(esat::IsSpecialKeyDown(esat::kSpecialKey_Down) && *form < 8){
     *form += 1;
@@ -104,7 +143,6 @@ void Register(int *form, Account *user){
   formSquare[1] = 120;        // y p1
   // i reuse the same shape and this help me change the shape and position
   UpdateFormSection(&(*formSquare), 300);
-
 
   esat::DrawText(50, 150, "NAME:");
   esat::DrawText(formSquare[6] + 10, formSquare[7] - 5, user->name);
@@ -179,10 +217,21 @@ void Register(int *form, Account *user){
     case 5: UpdateAccount(&user->birth, 16);    break;
     case 6: UpdateAccount(&user->province, 16); break;
     case 7: UpdateAccount(&user->nation, 16);   break;
+    case 8:
+      if(esat::IsSpecialKeyDown(esat::kSpecialKey_Enter)){
+        int outcome = CheckValidity(&user, 1);
+        // if outcome = 1 then the user is not alredy present in the file
+        if(outcome == 1){
+          *screen = 1;
+        }else{
+
+        }
+      }
+    break;
   }
 }
 
-void LogIn(int *form){
+void LogIn(int *form, Account *user, int *screen){
   if(esat::IsSpecialKeyDown(esat::kSpecialKey_Down) && *form < 3){
     *form+= 1;
   }
@@ -191,7 +240,7 @@ void LogIn(int *form){
 
   formSquare = (float*)malloc(10*sizeof(float));
   formSquare[0] = 80;  // x p1
-  formSquare[1] = 200;        // y p1
+  formSquare[1] = 200; // y p1
   UpdateFormSection(&(*formSquare), 600);
 
   arrow = (float*)malloc(6*sizeof(float));
@@ -202,13 +251,14 @@ void LogIn(int *form){
   arrow[4] = 20;
   arrow[5] = arrow[1]+20;
 
-
-  esat::DrawText(100, 180, "EMAIL");
+  esat::DrawText(100, 180, "EMAIL:");
+  esat::DrawText(formSquare[6] + 10, formSquare[7] - 5, user->mail);
   esat::DrawPath(formSquare, 5);
 
   formSquare[1] = 350;
   UpdateFormSection(&(*formSquare), 600);
-  esat::DrawText(100, 330, "PASSWORD");
+  esat::DrawText(100, 330, "PASSWORD:");
+  esat::DrawText(formSquare[6] + 10, formSquare[7] - 5, user->psw);
   esat::DrawPath(formSquare, 5);
 
   formSquare[0] = ScreenX/2 - 110;      // x p1
@@ -226,13 +276,25 @@ void LogIn(int *form){
 
   esat::DrawText(ScreenX/2 - 100, 550, "CONFIRM");
 
-  // switch (*form){
-  //   case 0: UpdateAccount(&user->name, 16);     break;
-  //   case 1: UpdateAccount(&user->surname, 16);  break;
-  // }
+  switch (*form){
+    case 0: UpdateAccount(&user->mail, 16);     break;
+    case 1: UpdateAccount(&user->psw, 16);  break;
+    case 2: 
+      if(esat::IsSpecialKeyDown(esat::kSpecialKey_Enter)){
+        int outcome = CheckValidity(&user, 1);
+        // if outcome = 1 both mail and password are correct and present in the file
+        if(outcome == 1){
+          *screen = 1;
+        }else{
+          //error
+          
+        }
+      }
+    break;
+  }
 }
 
-void Usersmanagement(int *option, int *form, Account *user){
+void Usersmanagement(int *screen, int *option, int *form, Account *user){
 
   esat::DrawSetFillColor(255,255,255);
   esat::DrawText(ScreenX/3 - 80, 80, "REGISTER");
@@ -261,12 +323,8 @@ void Usersmanagement(int *option, int *form, Account *user){
   esat::DrawPath(selectionSquare, 5);
 
   switch(*option){
-    case 0:
-      Register(&(*form), &(*user));
-    break;
-    case 1:
-      LogIn(&(*form));
-    break;
+    case 0: Register(&(*form), &(*user), &(*screen)); break;
+    case 1: LogIn(&(*form), &(*user), &(*screen));    break;
   }
 
   if(esat::IsSpecialKeyDown(esat::kSpecialKey_Right) && *option == 0){

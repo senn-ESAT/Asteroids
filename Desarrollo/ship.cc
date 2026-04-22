@@ -3,6 +3,7 @@ struct Ship{
   mm::Vec2 speed;
   float angulo = 0.0f;
   float *puntosNave;
+  int health;
 };
 
 void initShip(Ship *ship){
@@ -25,7 +26,8 @@ void initShip(Ship *ship){
 void Controls(Ship *ship, Bullet **bullets){
   //speed
   float current_speed = mm::magnitudeV2(ship->speed);
-  if(esat::IsKeyPressed('w') || esat::IsKeyPressed('W')){
+  if(esat::IsKeyPressed('w') || esat::IsKeyPressed('W')
+    || esat::IsSpecialKeyPressed(esat::kSpecialKey_Up)){
     if(current_speed > max_speed){
       ship->speed = mm::normalize(ship->speed);
       ship->speed = mm::scaleV2(ship->speed, max_speed);
@@ -37,11 +39,18 @@ void Controls(Ship *ship, Bullet **bullets){
   }
 
   //direction
-  if(esat::IsKeyPressed('d') || esat::IsKeyPressed('D')){
+  if(esat::IsKeyPressed('d') || esat::IsKeyPressed('D') 
+    || esat::IsSpecialKeyPressed(esat::kSpecialKey_Right)){
     ship->angulo += 0.07f;
-  }else if(esat::IsKeyPressed('a') || esat::IsKeyPressed('A')){
+  }else if(esat::IsKeyPressed('a') || esat::IsKeyPressed('A')
+        || esat::IsSpecialKeyPressed(esat::kSpecialKey_Left)){
     ship->angulo -= 0.07f;
   }
+
+  if(esat::IsKeyDown('g') || esat::IsKeyDown('G')){
+    ship->pos = {(float)(rand()%800), (float)(rand()%600)};
+  }
+
   // shoot
   if(esat::IsSpecialKeyDown(esat::kSpecialKey_Space) && 5 > BulletAmount((*bullets))){
     mm::Vec2 pos = ship->pos;

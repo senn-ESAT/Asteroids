@@ -71,8 +71,8 @@ void SplitAste(Asteroids **aste){
       (*aste)[i].points[5] = {  5.0f, - 8.0f, 1.0f};
       (*aste)[i].points[6] = {  0.0f,   2.0f, 1.0f};
       (*aste)[i].size = actualSize - 1; // size also functions as lives
-      (*aste)[i].pos = actualPos;   // random position 
-      (*aste)[i].speed = {-1.0f + (float)(rand()%3), -1.0f + (float)(rand()%3)};; // random speed between -1 ad +1
+      (*aste)[i].pos = actualPos;
+      (*aste)[i].speed = {-1.0f + (float)(rand()%3), -1.0f + (float)(rand()%3)}; // random speed between -1 ad +1
     }
   }
 }

@@ -15,6 +15,7 @@ int BulletAmount(Bullet *lista){
   for(loop = lista; loop != nullptr; loop = loop->prox){
     i++;
   }
+
   return i;
 }
 

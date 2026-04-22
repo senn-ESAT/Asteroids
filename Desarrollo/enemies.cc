@@ -1,7 +1,7 @@
 struct UFO{
   mm::Vec2 pos, speed;
-  esat::Vec3 *UFOPoints;
-  Bullet *enemyBullets;
+  esat::Vec3 *UFOPoints = nullptr;
+  Bullet *enemyBullets = nullptr;
   float size;       // There are 4 sizes that also represent the health
   bool alive, type; // If the ufo is alive or not, what type of ufo is it
   double TimeDeath, newDirection, fireTime; // the time the the ufo has been killed
