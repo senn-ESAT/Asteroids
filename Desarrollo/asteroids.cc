@@ -76,3 +76,65 @@ void SplitAste(Asteroids **aste){
     }
   }
 }
+
+/*
+
+/////////// ASTEROIDS SHAPES ///////////
+
+void VertsAsteroid_A(esat::Vec2 *vertices){
+  *(vertices)     = {-0.20f,  -0.40f}; //A
+  *(vertices + 1) = { 0.00f,  -0.60f}; //B
+  *(vertices + 2) = { 0.20f,  -0.40f}; //C
+  *(vertices + 3) = { 0.40f,  -0.60f}; //D
+  *(vertices + 4) = { 0.60f,  -0.40f}; //E
+  *(vertices + 5) = { 0.40f,  -0.16f}; //F
+  *(vertices + 6) = { 0.52f,   0.00f}; //G
+  *(vertices + 7) = { 0.40f,   0.20f}; //H
+  *(vertices + 8) = { 0.00f,   0.20f}; //I
+  *(vertices + 9) = {-0.20f,   0.00f}; //J
+}
+
+void VertsAsteroid_B(esat::Vec2 *vertices){
+  *(vertices)      =  { 0.0769f,  -0.20274f}; //A
+  *(vertices + 1)  =  {-0.1679f,  -0.39662f}; //B
+  *(vertices + 2)  =  { 0.2f,         -0.4f}; //C
+  *(vertices + 3)  =  { 0.40188f, -0.28188f}; //D
+  *(vertices + 4)  =  { 0.4f,         -0.2f}; //E
+  *(vertices + 5)  =  { 0.30691f,  -0.0049f}; //F
+  *(vertices + 6)  =  { 0.4f,          0.2f}; //G
+  *(vertices + 7)  =  { 0.2f,          0.4f}; //H
+  *(vertices + 8)  =  { 0.08533f,    0.3156}; //I
+  *(vertices + 9)  =  {-0.12042,    0.39869}; //J
+  *(vertices + 10) =  {-0.31035,    0.13359}; //K
+  *(vertices + 11) =  {-0.3143,    -0.20274}; //L
+}
+
+void VertsAsteroid_C(esat::Vec2 *vertices){
+  *(vertices)      =  { 0.15f,   0.47f};
+  *(vertices + 1)  =  { 0.00f,   0.40f};
+  *(vertices + 2)  =  {-0.20f,   0.47f};
+  *(vertices + 3)  =  {-0.41f,   0.36f};
+  *(vertices + 4)  =  {-0.30f,   0.11f};
+  *(vertices + 5)  =  {-0.45f,  -0.12f};
+  *(vertices + 6)  =  {-0.19f,  -0.51f};
+  *(vertices + 7)  =  { 0.05f,  -0.44f};
+  *(vertices + 8)  =  { 0.20f,  -0.51f};
+  *(vertices + 9)  =  { 0.46f,  -0.13f};
+  *(vertices + 10) =  { 0.34f,   0.08f};
+  *(vertices + 11) =  { 0.46f,   0.36f};
+}
+
+void VertsAsteroid_D(esat::Vec2 *vertices){
+  *(vertices)      =  {-0.34f,   0.70f};
+  *(vertices + 1)  =  { 0.25f,   0.69f};
+  *(vertices + 2)  =  { 0.67f,   0.09f};
+  *(vertices + 3)  =  { 0.67f,  -0.12f};
+  *(vertices + 4)  =  { 0.26f,  -0.71f};
+  *(vertices + 5)  =  { 0.00f,  -0.71f};
+  *(vertices + 6)  =  { 0.00f,  -0.31f};
+  *(vertices + 7)  =  {-0.24f,  -0.71f};
+  *(vertices + 8)  =  {-0.63f,  -0.13f};
+  *(vertices + 9)  =  {-0.51f,   0.00f};
+  *(vertices + 10) =  {-0.64f,   0.10f};
+}
+*/

@@ -63,6 +63,17 @@ void UpdateFormSection(float *section, float size){
   section[9] = section[1];        // y p5
 }
 
+void cleanUser(Account *user){
+  user->name[0] =    '\0';
+  user->surname[0] = '\0';
+  user->nick[0] =    '\0';
+  user->mail[0] =    '\0';
+  user->psw[0] =     '\0';
+  user->birth[0] =   '\0';
+  user->province[0]= '\0';
+  user->nation[0] =  '\0';
+}
+
 void UpdateAccount(char **campo, int nLetters){
   char input = esat::GetNextPressedKey();
   // If input detected
@@ -83,42 +94,71 @@ void UpdateAccount(char **campo, int nLetters){
 }
 
 int CheckValidity(Account **users, bool option){
+  printf("\n------[STARTING VERIFICATION]------\n");
   FILE *f1;
   
-  if(option){
-    bool found = false;
-    Account temp;
-    temp.name =    (char*)malloc(4*sizeof(char));
-    temp.surname = (char*)malloc(17*sizeof(char));
-    temp.nick =    (char*)malloc(17*sizeof(char));
-    temp.mail =    (char*)malloc(17*sizeof(char));
-    temp.psw =     (char*)malloc(17*sizeof(char));
-    temp.birth =   (char*)malloc(17*sizeof(char));
-    temp.province= (char*)malloc(17*sizeof(char));
-    temp.nation =  (char*)malloc(17*sizeof(char));
+  // LOGIN
+  Account temp;
+  temp.name =    (char*)malloc(4*sizeof(char));
+  temp.surname = (char*)malloc(17*sizeof(char));
+  temp.nick =    (char*)malloc(17*sizeof(char));
+  temp.mail =    (char*)malloc(17*sizeof(char));
+  temp.psw =     (char*)malloc(17*sizeof(char));
+  temp.birth =   (char*)malloc(17*sizeof(char));
+  temp.province= (char*)malloc(17*sizeof(char));
+  temp.nation =  (char*)malloc(17*sizeof(char));
+  
+  if(option == 1){
+    printf("[LOG IN]\n");
 
-    if((f1 = fopen("save.dat", "rb")) != nullptr){
-      printf("OPEN - ");
-      while(fread(&temp, sizeof(Account), 1, f1) != 0 && found == false){
-        if(temp.mail == (*users)->mail
-        && temp.psw == (*users)->psw){
+    f1 = fopen("accounts.dat", "rb+");
+    if(f1 != NULL){
+      printf("[FILE EXIST]\n");
+      while(fread(&temp, sizeof(temp), 1, f1)){
+        if((*users)->mail == temp.mail && (*users)->psw == temp.psw){
+          printf("[SUCCESS]\n");
           *(*users) = temp;
-          found = true;
-          printf("YAY");
+          fclose(f1);
+          return 1;
         }
       }
+
+      // no file no accounts
+      // or while ended so no match
+      printf("[FOUND NOT]\n");
+      return 0;
+    }
+  }// REGISTER
+  else{
+    printf("[------REGISTER START------]\n");
+
+    f1 = fopen("accounts.dat", "rb+");
+    if(f1 != NULL){
+      printf("[FILE EXIST]\n");
+        while(fread(&temp, sizeof(temp), 1, f1)){
+          // if account alredy exist then stop and exit
+          if((*users)->mail == temp.mail){
+            // if it match then account alredy registered
+            printf("[ACCOUNT ALREDY EXIST]\n");
+            fclose(f1);
+            return 0;
+          }
+        }
       fclose(f1);
     }
-    if(found){
-      printf("IT WORKED\n");
-      return 1;
-    }else{
-      printf("NO MATCH\n");
-      return 1;
-    }
-  }else{
-    // read and if not find then save
+    // if exited while it means that there is no match in the current list of accounts
+    // or the file is empty so no need for verifiation if it exist
+
+    printf("[ADDING ACCOUNT]\n");
+    (*users)->credit = 10;
+    
+    f1 = fopen("accounts.dat", "ab+");
+    fwrite(&(*users), sizeof((*users)), 1, f1);
+    fclose(f1);
+    return 1;
   }
+
+  printf("[INVALID OPERATION]\n");
   return 0;
 }
 
@@ -219,11 +259,12 @@ void Register(int *form, Account *user, int *screen){
     case 7: UpdateAccount(&user->nation, 16);   break;
     case 8:
       if(esat::IsSpecialKeyDown(esat::kSpecialKey_Enter)){
-        int outcome = CheckValidity(&user, 1);
+        int outcome = CheckValidity(&user, 0);
         // if outcome = 1 then the user is not alredy present in the file
         if(outcome == 1){
           *screen = 1;
         }else{
+          //TO-DO error
 
         }
       }
@@ -331,10 +372,12 @@ void Usersmanagement(int *screen, int *option, int *form, Account *user){
     printf("[GO TO LOGIN]\n");
     *option = 1;
     *form = 0;
+    cleanUser(&(*user));
   }else if(esat::IsSpecialKeyDown(esat::kSpecialKey_Left) && *option == 1){
     printf("[GO TO REGISTER]\n");
     *option = 0;
     *form = 0;
+    cleanUser(&(*user));
   }else if(esat::IsSpecialKeyDown(esat::kSpecialKey_Up) && *form > 0){
     *form-= 1;
   }
