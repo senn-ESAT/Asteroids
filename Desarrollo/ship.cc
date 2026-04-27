@@ -39,11 +39,11 @@ void Controls(Ship *ship, Bullet **bullets){
   }
 
   //direction
-  if(esat::IsKeyPressed('d') || esat::IsKeyPressed('D') 
-    || esat::IsSpecialKeyPressed(esat::kSpecialKey_Right)){
+  if(esat::IsKeyPressed('a') || esat::IsKeyPressed('A') 
+    || esat::IsSpecialKeyPressed(esat::kSpecialKey_Left)){
     ship->angulo += 0.07f;
-  }else if(esat::IsKeyPressed('a') || esat::IsKeyPressed('A')
-        || esat::IsSpecialKeyPressed(esat::kSpecialKey_Left)){
+  }else if(esat::IsKeyPressed('d') || esat::IsKeyPressed('D')
+        || esat::IsSpecialKeyPressed(esat::kSpecialKey_Right)){
     ship->angulo -= 0.07f;
   }
 

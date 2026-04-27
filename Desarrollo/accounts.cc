@@ -1,5 +1,5 @@
 struct Account{
-  int credit, points;
+  int credit, points, personalHS;
   char  *name,
         *surname,
         *mail,
@@ -11,6 +11,7 @@ struct Account{
 };
 
 // string.append(string2) = string+string2
+bool error = false;
 
 void InitAccount(Account *user){
   user->name =    nullptr;
@@ -97,7 +98,6 @@ int CheckValidity(Account **users, bool option){
   printf("\n------[STARTING VERIFICATION]------\n");
   FILE *f1;
   
-  // LOGIN
   Account temp;
   temp.name =    (char*)malloc(4*sizeof(char));
   temp.surname = (char*)malloc(17*sizeof(char));
@@ -108,6 +108,7 @@ int CheckValidity(Account **users, bool option){
   temp.province= (char*)malloc(17*sizeof(char));
   temp.nation =  (char*)malloc(17*sizeof(char));
   
+  // LOGIN
   if(option == 1){
     printf("[LOG IN]\n");
 
@@ -119,15 +120,14 @@ int CheckValidity(Account **users, bool option){
           printf("[SUCCESS]\n");
           *(*users) = temp;
           fclose(f1);
-          return 1;
+          return 0;
         }
       }
-
-      // no file no accounts
-      // or while ended so no match
-      printf("[FOUND NOT]\n");
-      return 0;
     }
+    // no file no accounts
+    // or while ended so no match
+    printf("[FOUND NOT]\n");
+    return 1;
   }// REGISTER
   else{
     printf("[------REGISTER START------]\n");
@@ -135,15 +135,15 @@ int CheckValidity(Account **users, bool option){
     f1 = fopen("accounts.dat", "rb+");
     if(f1 != NULL){
       printf("[FILE EXIST]\n");
-        while(fread(&temp, sizeof(temp), 1, f1)){
-          // if account alredy exist then stop and exit
-          if((*users)->mail == temp.mail){
-            // if it match then account alredy registered
-            printf("[ACCOUNT ALREDY EXIST]\n");
-            fclose(f1);
-            return 0;
-          }
+      while(fread(&temp, sizeof(temp), 1, f1)){
+        // if account alredy exist then stop and exit
+        if((*users)->mail == temp.mail){
+          // if it match then account alredy registered
+          printf("[ACCOUNT ALREDY EXIST]\n");
+          fclose(f1);
+          return 1;
         }
+      }
       fclose(f1);
     }
     // if exited while it means that there is no match in the current list of accounts
@@ -155,11 +155,10 @@ int CheckValidity(Account **users, bool option){
     f1 = fopen("accounts.dat", "ab+");
     fwrite(&(*users), sizeof((*users)), 1, f1);
     fclose(f1);
-    return 1;
+    return 0;
   }
-
   printf("[INVALID OPERATION]\n");
-  return 0;
+  return 1;
 }
 
 void Register(int *form, Account *user, int *screen){
@@ -244,7 +243,7 @@ void Register(int *form, Account *user, int *screen){
     esat::DrawSetFillColor(0,0,0);
   }
   
-  esat::DrawText(ScreenX/2 - 100, 550, "CONFIRM");
+  esat::DrawText(ScreenX/2 - 100, ScreenY - 50, "CONFIRM");
 
   //////////////////// INPUT MANAGER ////////////////////
 
@@ -259,17 +258,20 @@ void Register(int *form, Account *user, int *screen){
     case 7: UpdateAccount(&user->nation, 16);   break;
     case 8:
       if(esat::IsSpecialKeyDown(esat::kSpecialKey_Enter)){
-        int outcome = CheckValidity(&user, 0);
-        // if outcome = 1 then the user is not alredy present in the file
-        if(outcome == 1){
+        // if 1 error if 0 change screen
+        if(!CheckValidity(&user, 0)){
+          *form = 0;
           *screen = 1;
         }else{
-          //TO-DO error
-
+          error = true;
         }
       }
-    break;
-  }
+      break;
+    }
+
+    if(error = true){
+      esat::DrawText(ScreenX + 300, ScreenY - 50, "NOT VALID");
+    }
 }
 
 void LogIn(int *form, Account *user, int *screen){
@@ -322,16 +324,18 @@ void LogIn(int *form, Account *user, int *screen){
     case 1: UpdateAccount(&user->psw, 16);  break;
     case 2: 
       if(esat::IsSpecialKeyDown(esat::kSpecialKey_Enter)){
-        int outcome = CheckValidity(&user, 1);
         // if outcome = 1 both mail and password are correct and present in the file
-        if(outcome == 1){
+        if(!CheckValidity(&user, 1)){
+          *form = 0;
           *screen = 1;
-        }else{
-          //error
-          
         }
+        error = true;
       }
     break;
+  }
+
+  if(error){
+    esat::DrawText(ScreenX + 300, ScreenY - 50, "NOT VALID");
   }
 }
 
@@ -372,11 +376,13 @@ void Usersmanagement(int *screen, int *option, int *form, Account *user){
     printf("[GO TO LOGIN]\n");
     *option = 1;
     *form = 0;
+    error = 0;
     cleanUser(&(*user));
   }else if(esat::IsSpecialKeyDown(esat::kSpecialKey_Left) && *option == 1){
     printf("[GO TO REGISTER]\n");
     *option = 0;
     *form = 0;
+    error = 0;
     cleanUser(&(*user));
   }else if(esat::IsSpecialKeyDown(esat::kSpecialKey_Up) && *form > 0){
     *form-= 1;

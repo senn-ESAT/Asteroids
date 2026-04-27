@@ -21,6 +21,7 @@ const float max_speed = 7.0f;
 #include "./asteroids.cc"
 #include "./enemies.cc"
 #include "./accounts.cc"
+#include "./menu.cc"
 #include "./ship.cc"
 
 void DrawThings(Ship ship, Bullet *bullets, Asteroids *aste, UFO *enemy){
@@ -173,7 +174,29 @@ void CheckBorder(Ship *ship, Bullet **bullets, Asteroids **aste, UFO **enemy){
   }
 }
 
-void Menu(){}
+void Menu(int *page, Account *user, int *option, int *screen){
+  esat::DrawText(20, 30, "00");               // P1 hs
+  esat::DrawText(ScreenX/2 - 30, 30, "00");   // macin hs
+  esat::DrawText(ScreenX - 50, 30, "00");     // P2 hs
+  esat::DrawText(20, ScreenY - 20, "MATI2D");
+  esat::DrawText(ScreenX - 50, ScreenY - 20, "09");
+  esat::DrawText(ScreenX/2 - 120, ScreenY - 20, "©1979 ATARY INC");
+
+  switch (*page){
+    case 0:
+      initialScreen(&(*option), &(*screen));
+    break;
+    case 1:
+      HSList();
+    break;
+  }
+
+  if(esat::IsSpecialKeyPressed(esat::kSpecialKey_Right) && *page == 0){
+    *page += 1;
+  }else if(esat::IsSpecialKeyPressed(esat::kSpecialKey_Left) && *page == 1){
+    *page -= 1;
+  }
+}
 
 void InGame(Ship *ship, Bullet **bullets, Asteroids **asteroid, UFO *enemy){
   printf("\n\n[initShip -->");
@@ -204,7 +227,7 @@ void InGame(Ship *ship, Bullet **bullets, Asteroids **asteroid, UFO *enemy){
 int esat::main(int argc, char** argv) {
   //////////////LOGIC/////////////
   double current_time = 0.0, last_time = 0.0, fps = 60.0;
-  int screenSelector = 0, accountOption = 0, formSection = 0, lvl = 0;   // 0 login/registrar 1 menu de juego 2 juego
+  int screenSelector = 0, option = 0, formSection = 0, lvl = 0, menuPage = 0;   // 0 login/registrar 1 menu de juego 2 juego
   ////////SOLO 1 DE ESTOS/////////
   Ship ship = {{ScreenX/2.0f, ScreenY/2.0f}, {0.0f, 0.0f}};
   UFO enemy;
@@ -238,10 +261,10 @@ int esat::main(int argc, char** argv) {
 
     switch(screenSelector){
       case 0:
-        Usersmanagement(&screenSelector, &accountOption, &formSection, &user);
+        Usersmanagement(&screenSelector, &option, &formSection, &user);
       break;
       case 1:
-        Menu();
+        Menu(&menuPage, &user, &option, &screenSelector);
       break;
       case 2:
         InGame(&ship, &bullets, &asteroid, &enemy);
