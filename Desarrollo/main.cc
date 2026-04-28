@@ -1,3 +1,4 @@
+////////GENERAL////////
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
@@ -5,17 +6,19 @@
 #include <string.h>
 #include <conio.h>
 
-
+////////ESAT////////
 #include "esat/window.h"
 #include "esat/draw.h"
 #include "esat/input.h"
 #include "esat/sprite.h"
 #include "esat/time.h"
 
+////////GLOBAL////////
 const unsigned int ScreenX = 800;
 const unsigned int ScreenY = 600;
 const float max_speed = 7.0f;
 
+////////PAGES////////
 #include "./MathLib.h"
 #include "./bullet.cc"
 #include "./asteroids.cc"
@@ -260,25 +263,28 @@ int esat::main(int argc, char** argv) {
     esat::DrawClear(0, 0, 0);
 
     switch(screenSelector){
-      case 0:
+      case 0: // account manager
         Usersmanagement(&screenSelector, &option, &formSection, &user);
       break;
-      case 1:
+      case 1: //game menu
         Menu(&menuPage, &user, &option, &screenSelector);
       break;
-      case 2:
+      case 2: // game screen
         InGame(&ship, &bullets, &asteroid, &enemy);
-      break;    
+      break;
+      case 3: // admin
+        Admin(&option, &formSection);
+      break;
     }
 
     if(esat::IsSpecialKeyPressed(esat::kSpecialKey_Keypad_0)){
       screenSelector = 0;
-    }
-    if(esat::IsSpecialKeyPressed(esat::kSpecialKey_Keypad_1)){
+    }else if(esat::IsSpecialKeyPressed(esat::kSpecialKey_Keypad_1)){
       screenSelector = 1;
-    }
-    if(esat::IsSpecialKeyPressed(esat::kSpecialKey_Keypad_2)){
+    }else if(esat::IsSpecialKeyPressed(esat::kSpecialKey_Keypad_2)){
       screenSelector = 2;
+    }else if(esat::IsSpecialKeyPressed(esat::kSpecialKey_Keypad_3)){
+      screenSelector = 3;
     }
     
     esat::DrawEnd();
