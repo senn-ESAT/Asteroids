@@ -33,6 +33,18 @@ void DrawAsteroid(esat::Mat3 m, esat::Vec3 *points, int nPoint) {
   esat::DrawPath(&tr_circle[0].x, nPoint);
 }
 
+int AsteroidAmount(Asteroids *lista){
+  if(lista == nullptr){
+    return 0;
+  }
+
+  Asteroids *loop = nullptr;
+  int i = 0;
+  // TO-DO loop que cuenta los asteroides
+
+  return i;
+}
+
 void initAsteroids(Asteroids **aste, int amount){
   *aste = (Asteroids*)malloc(amount * sizeof(Asteroids));
   

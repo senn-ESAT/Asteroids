@@ -1,5 +1,5 @@
 struct Account{
-  int credit, points, personalHS;
+  int credit, personalHS;
   char  *name,
         *surname,
         *mail,
@@ -41,17 +41,6 @@ void InitAccount(Account *user){
   user->province[0]= '\0';
   user->nation[0] =  '\0';
 }
-
-// int getID() {
-//   Account last;
-
-//   if (fseek(f, -sizeof(Account), SEEK_END) != 0){
-//     return 0;
-//   }
-
-//   fread(&last, sizeof(Account), 1, f);
-//   return last.id + 1;
-// }
 
 void UpdateFormSection(float *section, float size){
   section[2] = section[0] + size; // x p2
@@ -106,10 +95,27 @@ void UpdateAccount(char **campo, int nLetters){
   }
 }
 
+void freeTemp(Account *temp){
+  // free(temp->name); temp->name = NULL;
+  // free(temp->surname); temp->surname = NULL;
+  // free(temp->nick); temp->nick = NULL;
+  // free(temp->mail); temp->mail = NULL;
+  // free(temp->psw);  temp->psw = NULL;
+  // free(temp->birth);  temp->birth = NULL;
+  // free(temp->province); temp->province = NULL;
+  // free(temp->nation); temp->nation = NULL;
+}
+
 int CheckValidity(Account **users, bool option){
   printf("\n------[STARTING VERIFICATION]------\n");
   FILE *f1;
   
+  // esta verifica sirve para ambos casos
+  if((*users)->mail[0] == '\0' && (*users)->psw[0] == '\0'){
+    printf("EMPTY\n");
+    return 1;
+  }
+
   Account temp;
   temp.name =    (char*)malloc(4*sizeof(char));
   temp.surname = (char*)malloc(17*sizeof(char));
@@ -120,17 +126,11 @@ int CheckValidity(Account **users, bool option){
   temp.province= (char*)malloc(17*sizeof(char));
   temp.nation =  (char*)malloc(17*sizeof(char));
   
-  // esta verifica sirve para ambos casos
-  if((*users)->mail[0] == '\0' && (*users)->psw[0] == '\0'){
-    printf("EMPTY\n");
-    return 1;
-  }
-  
   // LOGIN
   if(option == 1){
     printf("[LOG IN]\n");
 
-    f1 = fopen("accounts.dat", "rb+");
+    f1 = fopen("accounts.dat", "rb");
     if(f1 != NULL){
       printf("[FILE EXIST]\n");
       while(fread(&temp, sizeof(temp), 1, f1)){
@@ -138,6 +138,7 @@ int CheckValidity(Account **users, bool option){
           printf("[SUCCESS]\n");
           *(*users) = temp;
           fclose(f1);
+          freeTemp(&temp);
           return 0;
         }
       }
@@ -145,6 +146,7 @@ int CheckValidity(Account **users, bool option){
     // no file no accounts
     // or while ended so no match
     printf("[FOUND NOT]\n");
+    freeTemp(&temp);
     return 1;
   }// REGISTER
   else{
@@ -156,10 +158,11 @@ int CheckValidity(Account **users, bool option){
       && (*users)->province[0] == '\0'
       && (*users)->nation[0] == '\0'){
       printf("EMPTY\n");
+      freeTemp(&temp);
       return 1;
     }
 
-    f1 = fopen("accounts.dat", "rb+");
+    f1 = fopen("accounts.dat", "rb");
     if(f1 != NULL){
       printf("[FILE EXIST]\n");
       while(fread(&temp, sizeof(temp), 1, f1)){
@@ -168,6 +171,7 @@ int CheckValidity(Account **users, bool option){
           // if it match then account alredy registered
           printf("[ACCOUNT ALREDY EXIST]\n");
           fclose(f1);
+          freeTemp(&temp);
           return 1;
         }
       }
@@ -180,12 +184,15 @@ int CheckValidity(Account **users, bool option){
     temp = *(*users);
     temp.credit = 10;
     
+    // ab+ is w/r at the last positions
     f1 = fopen("accounts.dat", "ab+");
     fwrite(&temp, sizeof(temp), 1, f1);
     fclose(f1);
+    freeTemp(&temp);
     return 0;
   }
   printf("[INVALID OPERATION]\n");
+  freeTemp(&temp);
   return 1;
 }
 
@@ -291,8 +298,10 @@ void Register(int *form, Account *user, int *screen){
     break;
   }
 
-  if(error = true){
-    esat::DrawText(ScreenX + 300, ScreenY - 50, "NOT VALID");
+  if(error == true){
+    printf("Entered ERROR");
+    esat::DrawSetFillColor(255,0,0);
+    esat::DrawText(ScreenX + 150, 550, "NOT VALID");
   }
 }
 
@@ -308,7 +317,7 @@ void LogIn(int *form, Account *user, int *screen){
   formSquare[1] = 200; // y p1
   UpdateFormSection(&(*formSquare), 600);
 
-  arrow = ArrowShape((*form))
+  arrow = ArrowShape((*form));
 
   esat::DrawText(100, 180, "EMAIL:");
   esat::DrawText(formSquare[6] + 10, formSquare[7] - 5, user->mail);
@@ -351,7 +360,9 @@ void LogIn(int *form, Account *user, int *screen){
   }
 
   if(error){
-    esat::DrawText(ScreenX + 300, ScreenY - 50, "NOT VALID");
+    printf("Entered ERROR");
+    esat::DrawSetFillColor(255,0,0);
+    esat::DrawText(ScreenX + 150, 550, "NOT VALID");
   }
 }
 
@@ -412,55 +423,60 @@ void Usersmanagement(int *screen, int *option, int *form, Account *user){
 void Admin(int *option, int *userSelect){
   // TO-DO admin login
   FILE *f;
-  f = fopen("accounts.dat", "rb+");
-  Account temp;
-  // temp.name =    (char*)malloc(4*sizeof(char));
-  // temp.surname = (char*)malloc(17*sizeof(char));
-  // temp.nick =    (char*)malloc(17*sizeof(char));
-  // temp.mail =    (char*)malloc(17*sizeof(char));
-  // temp.psw =     (char*)malloc(17*sizeof(char));
-  // temp.birth =   (char*)malloc(17*sizeof(char));
-  // temp.province= (char*)malloc(17*sizeof(char));
-  // temp.nation =  (char*)malloc(17*sizeof(char));
+  f = fopen("accounts.dat", "rb");
   
   if(f != NULL){
+    Account temp;
+    temp.name =    (char*)malloc(4*sizeof(char));
+    temp.surname = (char*)malloc(17*sizeof(char));
+    temp.nick =    (char*)malloc(17*sizeof(char));
+    temp.mail =    (char*)malloc(17*sizeof(char));
+    temp.psw =     (char*)malloc(17*sizeof(char));
+    temp.birth =   (char*)malloc(17*sizeof(char));
+    temp.province= (char*)malloc(17*sizeof(char));
+    temp.nation =  (char*)malloc(17*sizeof(char));
     esat::DrawSetStrokeColor(255,255,255);
     esat::DrawSetTextSize(20);
     
     int HowMany = 0;
-    float scroll = 130.0f, *formSquare, *arrow;
+    float scroll = 150.0f, *formSquare, *arrow;
     arrow = ArrowShape(1);
     esat::DrawSolidPath(arrow, 3);
 
-    formSquare = (float*)malloc(10*sizeof(float));
-    formSquare[0] = 520;  // x p1
-    formSquare[1] = 120;  // y p1
-    // i reuse the same shape and this help me change the shape and position
-    UpdateFormSection(&(*formSquare), 300);
+    // formSquare = (float*)malloc(10*sizeof(float));
+    // formSquare[0] = 520;  // x p1
+    // formSquare[1] = 120;  // y p1
+    // UpdateFormSection(&(*formSquare), 120);
   
     // TO-DO Terminar los botones y entender crash
-    if(*option < 1){
-      esat::DrawPath(formSquare, 5);
-    }
-    else{
-      esat::DrawSolidPath(formSquare, 5);
-      esat::DrawSetFillColor(0,0,0);
-    }
+    // if(*option < 1){
+    //   esat::DrawPath(formSquare, 5);
+    // }
+    // else{
+    //   esat::DrawSolidPath(formSquare, 5);
+    //   esat::DrawSetFillColor(0,0,0);
+    // }
+
+    printf("\nOPTION: %d, USERSELECT: %d\n", *option, *userSelect);
     
     esat::DrawText(530, scroll + 15, "EDIT");
     esat::DrawText(650, scroll + 15, "DELETE");
 
     printf("------------ADMIN------------\n");
     while(fread(&temp, sizeof(temp), 1, f)){
+      printf("DrawLine\n");
       esat::DrawLine(100.0f, (scroll - 30), 700.0f, (scroll - 30));
+      printf("[NICK: ");  fputs(temp.nick, stdout);
       esat::DrawText(100, scroll, temp.nick);
+      printf("  MAIL: "); fputs(temp.mail, stdout);
       esat::DrawText(100, scroll + 30, temp.mail);
       
-      printf("[NICK: ");  fputs(temp.nick, stdout);
-      printf("  MAIL: "); fputs(temp.mail, stdout);
       scroll += 80;
       HowMany++;
+      printf("\nEnd While\n");
     }
+    printf("Fclose\n");
+
     fclose(f);
     esat::DrawSetTextSize(30);
   
@@ -477,18 +493,9 @@ void Admin(int *option, int *userSelect){
     if(esat::IsSpecialKeyDown(esat::kSpecialKey_Enter) && *option > 0){
       // TO-DO cambia paginas a o edit o elim dempendiendo de option si es 1 o 2
     }
+
+    printf("FREE temp\n");
+    freeTemp(&temp);
   }
-
-
-  printf("\nFREE MEMORY\n");
-  // TO-DO crashea si esto
-  // free(temp.name);
-  // free(temp.surname);
-  // free(temp.nick);
-  // free(temp.mail);
-  // free(temp.psw);
-  // free(temp.birth);
-  // free(temp.province);
-  // free(temp.nation);
   printf("\n---------------------------\n");
 }

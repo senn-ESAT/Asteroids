@@ -3,24 +3,34 @@ struct Ship{
   mm::Vec2 speed;
   float angulo = 0.0f;
   float *puntosNave;
-  int health;
+  int health, score;
 };
+
+float* ShipShape(float angle_a, float angle_b, float angle_c, mm::Vec2 pos){
+  float *puntosNave;
+  puntosNave = (float*)malloc(8*sizeof(float));
+  
+  puntosNave[0] = sinf(angle_a)*10+pos.x;
+  puntosNave[1] = cosf(angle_a)*10+pos.y;
+  puntosNave[2] = sinf(angle_b)*7+pos.x;
+  puntosNave[3] = cosf(angle_b)*7+pos.y;
+  puntosNave[4] = sinf(angle_c)*7+pos.x;
+  puntosNave[5] = cosf(angle_c)*7+pos.y;
+  puntosNave[6] = sinf(angle_a)*10+pos.x;
+  puntosNave[7] = cosf(angle_a)*10+pos.y;
+
+  return puntosNave;
+}
 
 void initShip(Ship *ship){
   float angle_a = ship->angulo;
   float angle_b = -161.0f + angle_a;
   float angle_c = 161.0f + angle_a;
 
-  ship->puntosNave = (float*)malloc(8*sizeof(float));
+  ship->puntosNave = ShipShape(angle_a, angle_b, angle_c, ship->pos);
 
-  ship->puntosNave[0] = sinf(angle_a)*10+ship->pos.x;
-  ship->puntosNave[1] = cosf(angle_a)*10+ship->pos.y;
-  ship->puntosNave[2] = sinf(angle_b)*7+ship->pos.x;
-  ship->puntosNave[3] = cosf(angle_b)*7+ship->pos.y;
-  ship->puntosNave[4] = sinf(angle_c)*7+ship->pos.x;
-  ship->puntosNave[5] = cosf(angle_c)*7+ship->pos.y;
-  ship->puntosNave[6] = sinf(angle_a)*10+ship->pos.x;
-  ship->puntosNave[7] = cosf(angle_a)*10+ship->pos.y;
+  ship->health = 3;
+
 }
 
 void Controls(Ship *ship, Bullet **bullets){

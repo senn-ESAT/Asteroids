@@ -16,7 +16,7 @@
 ////////GLOBAL////////
 const unsigned int ScreenX = 800;
 const unsigned int ScreenY = 600;
-const float max_speed = 7.0f;
+const float max_speed = 7.0f; // no need for this as a global
 
 ////////PAGES////////
 #include "./MathLib.h"
@@ -31,6 +31,15 @@ void DrawThings(Ship ship, Bullet *bullets, Asteroids *aste, UFO *enemy){
   printf("1");
   esat::DrawSetStrokeColor(255, 255, 255);
   esat::DrawPath(ship.puntosNave, 4);
+
+  // LIVES
+  mm::Vec2 pos = {50, 50};
+  float *health, angle = 180.0f;
+  for(int i = 0; i < ship.health; i++){
+    health = ShipShape(angle, -161.0f + angle, 161.0f + angle, pos);
+    esat::DrawPath(health, 4);
+    pos.x += 30.0f;
+  }
   
   printf("2");
   if(bullets != nullptr){
@@ -83,6 +92,7 @@ void DrawThings(Ship ship, Bullet *bullets, Asteroids *aste, UFO *enemy){
       }
     }
   }
+
   printf("DRAW END ");
 }
 
@@ -178,11 +188,15 @@ void CheckBorder(Ship *ship, Bullet **bullets, Asteroids **aste, UFO **enemy){
 }
 
 void Menu(int *page, Account *user, int *option, int *screen){
+  char *dCredit;
+  dCredit = (char*)malloc(2 * sizeof(char));
+  itoa(user->credit, dCredit, 10);
+
   esat::DrawText(20, 30, "00");               // P1 hs
-  esat::DrawText(ScreenX/2 - 30, 30, "00");   // macin hs
+  esat::DrawText(ScreenX/2 - 30, 30, "00");   // max hs
   esat::DrawText(ScreenX - 50, 30, "00");     // P2 hs
-  esat::DrawText(20, ScreenY - 20, "MATI2D");
-  esat::DrawText(ScreenX - 50, ScreenY - 20, "09");
+  esat::DrawText(20, ScreenY - 20, user->name);
+  esat::DrawText(ScreenX - 50, ScreenY - 20, dCredit);
   esat::DrawText(ScreenX/2 - 120, ScreenY - 20, "©1979 ATARY INC");
 
   switch (*page){
@@ -230,7 +244,7 @@ void InGame(Ship *ship, Bullet **bullets, Asteroids **asteroid, UFO *enemy){
 int esat::main(int argc, char** argv) {
   //////////////LOGIC/////////////
   double current_time = 0.0, last_time = 0.0, fps = 60.0;
-  int screenSelector = 0, option = 0, formSection = 0, lvl = 0, menuPage = 0;   // 0 login/registrar 1 menu de juego 2 juego
+  int screenSelector = 2, option = 0, formSection = 0, lvl = 0, menuPage = 0;   // 0 login/registrar 1 menu de juego 2 juego
   ////////SOLO 1 DE ESTOS/////////
   Ship ship = {{ScreenX/2.0f, ScreenY/2.0f}, {0.0f, 0.0f}};
   UFO enemy;
@@ -285,6 +299,8 @@ int esat::main(int argc, char** argv) {
       screenSelector = 2;
     }else if(esat::IsSpecialKeyPressed(esat::kSpecialKey_Keypad_3)){
       screenSelector = 3;
+    }else if(esat::IsSpecialKeyPressed(esat::kSpecialKey_Keypad_9)){
+      SplitAste(&asteroid);
     }
     
     esat::DrawEnd();
