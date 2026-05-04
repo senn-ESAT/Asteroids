@@ -54,6 +54,53 @@ void HSList(){
   esat::DrawText((ScreenX/2)-200, 450, "5 TH              PTS");
 }
 
+void Menu(int *page, Account *user, int *option, int *screen){
+  printf(" -------- [MENU START] -------- \n");
+  printf("--> dCredit");
+  char *dCredit;
+  dCredit = (char*)malloc(3 * sizeof(char));
+  if(user->credit){
+    printf("  C: %d  ", user->credit);
+    itoa(user->credit, dCredit, 10);
+  }else{
+    dCredit[0] = '0';
+    dCredit[1] = '0';
+  }
+  dCredit[2] = '\0';
+
+  printf(" --> Start Drawing");
+  esat::DrawText(20, 30, "00");               // P1 hs
+  esat::DrawText(ScreenX/2 - 30, 30, "00");   // max hs
+  esat::DrawText(ScreenX - 50, 30, "00");     // P2 hs
+  printf(" --> NAME");
+  if(user->nick){
+    fputs(user->nick, stdout);
+    esat::DrawText(20, ScreenY - 20, user->nick);
+  }
+  printf(" --> dCredit");
+  fputs(dCredit, stdout);
+  esat::DrawText(ScreenX - 50, ScreenY - 20, dCredit);
+  esat::DrawText(ScreenX/2 - 120, ScreenY - 20, "©1979 ATARY INC");
+
+  printf(" --> MENU PAGES");
+  switch (*page){
+    case 0:
+      initialScreen(&(*option), &(*screen));
+    break;
+    case 1:
+      HSList();
+    break;
+  }
+
+  printf(" --> INPUT PAGES");
+  if(esat::IsSpecialKeyPressed(esat::kSpecialKey_Right) && *page == 0){
+    *page += 1;
+  }else if(esat::IsSpecialKeyPressed(esat::kSpecialKey_Left) && *page == 1){
+    *page -= 1;
+  }
+  printf(" -------- [MENU END] -------- \n");
+}
+
 /*
 void DubujarMenu(){
   switch(TipoMenu){

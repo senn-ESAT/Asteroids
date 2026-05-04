@@ -64,7 +64,8 @@ void DrawThings(Ship ship, Bullet *bullets, Asteroids *aste, UFO *enemy){
   printf("3");
   for(int i = 0; i < 5; i++){
     esat::Mat3 a = MatAsteroid(aste[i].pos, aste[i].size);
-    DrawAsteroid(a, aste[i].points, 7);
+
+    DrawAsteroid(a, aste[i].points, aste[i].nPoints);
   }
 
   if(enemy->alive){
@@ -187,34 +188,6 @@ void CheckBorder(Ship *ship, Bullet **bullets, Asteroids **aste, UFO **enemy){
   }
 }
 
-void Menu(int *page, Account *user, int *option, int *screen){
-  char *dCredit;
-  dCredit = (char*)malloc(2 * sizeof(char));
-  itoa(user->credit, dCredit, 10);
-
-  esat::DrawText(20, 30, "00");               // P1 hs
-  esat::DrawText(ScreenX/2 - 30, 30, "00");   // max hs
-  esat::DrawText(ScreenX - 50, 30, "00");     // P2 hs
-  esat::DrawText(20, ScreenY - 20, user->name);
-  esat::DrawText(ScreenX - 50, ScreenY - 20, dCredit);
-  esat::DrawText(ScreenX/2 - 120, ScreenY - 20, "©1979 ATARY INC");
-
-  switch (*page){
-    case 0:
-      initialScreen(&(*option), &(*screen));
-    break;
-    case 1:
-      HSList();
-    break;
-  }
-
-  if(esat::IsSpecialKeyPressed(esat::kSpecialKey_Right) && *page == 0){
-    *page += 1;
-  }else if(esat::IsSpecialKeyPressed(esat::kSpecialKey_Left) && *page == 1){
-    *page -= 1;
-  }
-}
-
 void InGame(Ship *ship, Bullet **bullets, Asteroids **asteroid, UFO *enemy){
   printf("\n\n[initShip -->");
   initShip(&(*ship));
@@ -244,7 +217,7 @@ void InGame(Ship *ship, Bullet **bullets, Asteroids **asteroid, UFO *enemy){
 int esat::main(int argc, char** argv) {
   //////////////LOGIC/////////////
   double current_time = 0.0, last_time = 0.0, fps = 60.0;
-  int screenSelector = 2, option = 0, formSection = 0, lvl = 0, menuPage = 0;   // 0 login/registrar 1 menu de juego 2 juego
+  int screenSelector = 0, option = 0, formSection = 0, lvl = 0, menuPage = 0;   // 0 login/registrar 1 menu de juego 2 juego
   ////////SOLO 1 DE ESTOS/////////
   Ship ship = {{ScreenX/2.0f, ScreenY/2.0f}, {0.0f, 0.0f}};
   UFO enemy;

@@ -106,6 +106,21 @@ void freeTemp(Account *temp){
   // free(temp->nation); temp->nation = NULL;
 }
 
+void writeString(FILE **f, char* text, int length){
+  int i = 0;
+  char mt = '\0';
+  while(i < strlen(text)){
+    fwrite(&text[i], sizeof(char), 1, *f);
+    i++;
+  }
+  while(i < length){
+    fwrite(&mt, sizeof(char), 1, *f);
+    i++;
+  }
+  printf("\n[i]: %d\n", i);
+}
+
+
 int CheckValidity(Account **users, bool option){
   printf("\n------[STARTING VERIFICATION]------\n");
   FILE *f1;
@@ -134,7 +149,7 @@ int CheckValidity(Account **users, bool option){
     if(f1 != NULL){
       printf("[FILE EXIST]\n");
       while(fread(&temp, sizeof(temp), 1, f1)){
-        if((*users)->mail == temp.mail && (*users)->psw == temp.psw){
+        if(strcmp((*users)->mail, temp.mail) == 0 && strcmp((*users)->psw, temp.psw)){
           printf("[SUCCESS]\n");
           *(*users) = temp;
           fclose(f1);
@@ -166,8 +181,10 @@ int CheckValidity(Account **users, bool option){
     if(f1 != NULL){
       printf("[FILE EXIST]\n");
       while(fread(&temp, sizeof(temp), 1, f1)){
+        printf("[LOOP]\n");
+
         // if account alredy exist then stop and exit
-        if((*users)->mail == temp.mail && (*users)->nick == temp.nick){
+        if(strcmp((*users)->mail, temp.mail) == 0 && strcmp((*users)->nick, temp.nick) == 0){
           // if it match then account alredy registered
           printf("[ACCOUNT ALREDY EXIST]\n");
           fclose(f1);
@@ -183,11 +200,32 @@ int CheckValidity(Account **users, bool option){
     printf("[ADDING ACCOUNT]\n");
     temp = *(*users);
     temp.credit = 10;
-    
+    temp.personalHS = 0;
+
+    (*users)->credit = temp.credit;
+    (*users)->personalHS = temp.personalHS;
+
+    printf(" --> OPEN");
     // ab+ is w/r at the last positions
     f1 = fopen("accounts.dat", "ab+");
-    fwrite(&temp, sizeof(temp), 1, f1);
+
+    printf(" --> WRITE NUMBERS");
+    fwrite(&temp.credit, sizeof(temp.credit), 1, f1);
+    fwrite(&temp.personalHS, sizeof(temp.personalHS), 1, f1);
+
+    printf(" --> WRITE STRING");
+    writeString(&f1, temp.name, 4);
+    writeString(&f1, temp.surname, 17);
+    writeString(&f1, temp.mail, 17);
+    writeString(&f1, temp.birth, 17);
+    writeString(&f1, temp.province, 17);
+    writeString(&f1, temp.nation, 17);
+    writeString(&f1, temp.nick, 17);
+    writeString(&f1, temp.psw, 17);
+
+    printf(" --> CLOSE");
     fclose(f1);
+
     freeTemp(&temp);
     return 0;
   }
@@ -466,10 +504,19 @@ void Admin(int *option, int *userSelect){
     while(fread(&temp, sizeof(temp), 1, f)){
       printf("DrawLine\n");
       esat::DrawLine(100.0f, (scroll - 30), 700.0f, (scroll - 30));
+
       printf("[NICK: ");  fputs(temp.nick, stdout);
-      esat::DrawText(100, scroll, temp.nick);
+      if(temp.nick){
+        for(int i = 0; i < 4; i++){
+          printf("%c", temp.nick[i]);
+        }
+        esat::DrawText(100, scroll, temp.nick);
+      }
+
       printf("  MAIL: "); fputs(temp.mail, stdout);
-      esat::DrawText(100, scroll + 30, temp.mail);
+      if(temp.mail){
+        esat::DrawText(100, scroll + 30, temp.mail);
+      }
       
       scroll += 80;
       HowMany++;

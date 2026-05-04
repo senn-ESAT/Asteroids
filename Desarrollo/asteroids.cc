@@ -1,8 +1,9 @@
 struct Asteroids{
-  int type;
   float size;
+  int nPoints;
   mm::Vec2 pos, speed;
   esat::Vec3 *points;
+  // TO-DO colision areas
 };
 
 const int kNPoints = 20;
@@ -28,9 +29,9 @@ void DrawAsteroid(esat::Mat3 m, esat::Vec3 *points, int nPoint) {
     esat::Vec3 tmp = esat::Mat3TransformVec3(m, points[i]);    
     tr_circle[i] = { tmp.x, tmp.y };
   }
-  esat::DrawSetStrokeColor(0,0,0,0);
+  esat::DrawSetFillColor(0,0,0,0);
   esat::DrawSetStrokeColor(255, 255, 255, 255);
-  esat::DrawPath(&tr_circle[0].x, nPoint);
+  esat::DrawSolidPath(&tr_circle[0].x, nPoint);
 }
 
 int AsteroidAmount(Asteroids *lista){
@@ -45,23 +46,99 @@ int AsteroidAmount(Asteroids *lista){
   return i;
 }
 
+esat::Vec3* AsteroidShapes(int n){
+  esat::Vec3 *vertices;
+  switch (n){
+    case 0:
+      vertices = (esat::Vec3*)malloc(10 * sizeof(esat::Vec3));
+      *(vertices)     = {-0.20f,  -0.40f, 1.0f}; //A
+      *(vertices + 1) = { 0.00f,  -0.60f, 1.0f}; //B
+      *(vertices + 2) = { 0.20f,  -0.40f, 1.0f}; //C
+      *(vertices + 3) = { 0.40f,  -0.60f, 1.0f}; //D
+      *(vertices + 4) = { 0.60f,  -0.40f, 1.0f}; //E
+      *(vertices + 5) = { 0.40f,  -0.16f, 1.0f}; //F
+      *(vertices + 6) = { 0.52f,   0.00f, 1.0f}; //G
+      *(vertices + 7) = { 0.40f,   0.20f, 1.0f}; //H
+      *(vertices + 8) = { 0.00f,   0.20f, 1.0f}; //I
+      *(vertices + 9) = {-0.20f,   0.00f, 1.0f}; //J
+
+    break;
+    case 1:
+      vertices = (esat::Vec3*)malloc(12 * sizeof(esat::Vec3));
+
+      *(vertices)      =  { 0.08f,  -0.20f, 1.0f}; //A
+      *(vertices + 1)  =  {-0.17f,  -0.40f, 1.0f}; //B
+      *(vertices + 2)  =  { 0.2f,   -0.4f, 1.0f}; //C
+      *(vertices + 3)  =  { 0.40f,  -0.28f, 1.0f}; //D
+      *(vertices + 4)  =  { 0.4f,   -0.2f, 1.0f}; //E
+      *(vertices + 5)  =  { 0.30f,  -0.0f   , 1.0f}; //F
+      *(vertices + 6)  =  { 0.4f,    0.2f   , 1.0f}; //G
+      *(vertices + 7)  =  { 0.2f,    0.4f   , 1.0f}; //H
+      *(vertices + 8)  =  { 0.085f,  0.315f , 1.0f}; //I
+      *(vertices + 9)  =  {-0.12f,   0.4f   , 1.0f}; //J
+      *(vertices + 10) =  {-0.31,    0.13f  , 1.0f}; //K
+      *(vertices + 11) =  {-0.31,    -0.2f  , 1.0f}; //L
+    break;
+    case 2:
+      vertices = (esat::Vec3*)malloc(12 * sizeof(esat::Vec3));
+
+      *(vertices)      =  { 0.15f,   0.47f, 1.0f};
+      *(vertices + 1)  =  { 0.00f,   0.40f, 1.0f};
+      *(vertices + 2)  =  {-0.20f,   0.47f, 1.0f};
+      *(vertices + 3)  =  {-0.41f,   0.36f, 1.0f};
+      *(vertices + 4)  =  {-0.30f,   0.11f, 1.0f};
+      *(vertices + 5)  =  {-0.45f,  -0.12f, 1.0f};
+      *(vertices + 6)  =  {-0.19f,  -0.51f, 1.0f};
+      *(vertices + 7)  =  { 0.05f,  -0.44f, 1.0f};
+      *(vertices + 8)  =  { 0.20f,  -0.51f, 1.0f};
+      *(vertices + 9)  =  { 0.46f,  -0.13f, 1.0f};
+      *(vertices + 10) =  { 0.34f,   0.08f, 1.0f};
+      *(vertices + 11) =  { 0.46f,   0.36f, 1.0f};
+    break;
+    case 3:
+      vertices = (esat::Vec3*)malloc(11 * sizeof(esat::Vec3));
+
+      *(vertices)      =  {-0.34f,   0.70f, 1.0f};
+      *(vertices + 1)  =  { 0.25f,   0.69f, 1.0f};
+      *(vertices + 2)  =  { 0.67f,   0.09f, 1.0f};
+      *(vertices + 3)  =  { 0.67f,  -0.12f, 1.0f};
+      *(vertices + 4)  =  { 0.26f,  -0.71f, 1.0f};
+      *(vertices + 5)  =  { 0.00f,  -0.71f, 1.0f};
+      *(vertices + 6)  =  { 0.00f,  -0.31f, 1.0f};
+      *(vertices + 7)  =  {-0.24f,  -0.71f, 1.0f};
+      *(vertices + 8)  =  {-0.63f,  -0.13f, 1.0f};
+      *(vertices + 9)  =  {-0.51f,   0.00f, 1.0f};
+      *(vertices + 10) =  {-0.64f,   0.10f, 1.0f};
+
+    break;
+  }
+  return vertices;
+}
+
 void initAsteroids(Asteroids **aste, int amount){
   *aste = (Asteroids*)malloc(amount * sizeof(Asteroids));
   
   for (int i = 0; i < amount; i++){
-    (*aste)[i].type = 3;    // shape
-    (*aste)[i].points = (esat::Vec3*)malloc(7*sizeof(esat::Vec3));
-    (*aste)[i].points[0] = {  0.0f,   2.0f, 1.0f};
-    (*aste)[i].points[1] = {- 5.0f, - 8.0f, 1.0f};
-    (*aste)[i].points[2] = {- 3.0f, - 8.0f, 1.0f};
-    (*aste)[i].points[3] = {  0.0f,   5.0f, 1.0f};
-    (*aste)[i].points[4] = {  8.0f, - 0.0f, 1.0f};
-    (*aste)[i].points[5] = {  5.0f, - 8.0f, 1.0f};
-    (*aste)[i].points[6] = {  0.0f,   2.0f, 1.0f};
+    int random = rand()%4;
+    switch (random){
+    case 0: (*aste)[i].nPoints = 10; break;
+    case 1: (*aste)[i].nPoints = 12; break;
+    case 2: (*aste)[i].nPoints = 12; break;
+    case 3: (*aste)[i].nPoints = 11; break;
+    }
+    (*aste)[i].points = AsteroidShapes(random);
+
     // no normalizo
-    (*aste)[i].size = 4.0f; // size also functions as lives
+    (*aste)[i].size = 40.0f; // size also functions as lives
     (*aste)[i].pos = {(float)(rand()%800), (float)(rand()%600)};   // random position 
-    (*aste)[i].speed = {-1.0f + (float)(rand()%3), -1.0f + (float)(rand()%3)};; // random speed between -1 ad +1
+    //AHHHHHHHHH 
+    do{
+      (*aste)[i].speed = {-1.0f + ((float)(rand())/(float)(rand())) / 1000,
+                          -1.0f + ((float)(rand())/(float)(rand())) / 1000}; // random speed between -1 ad +1
+    }while((*aste)[i].speed.x != 0.0f && (*aste)[i].speed.y != 0.0f);
+    
+
+    printf("\n[x]: %f [y]: %f\n", (*aste)[i].speed.x, (*aste)[i].speed.y);
   }
 }
 
@@ -73,15 +150,14 @@ void SplitAste(Asteroids **aste){
     *aste = (Asteroids*)realloc(*aste ,2 * sizeof(Asteroids));
     
     for (int i = 0; i < 2; i++){
-      (*aste)[i].type = 3;    // shape
-      (*aste)[i].points = (esat::Vec3*)malloc(7*sizeof(esat::Vec3));
-      (*aste)[i].points[0] = {  0.0f,   2.0f, 1.0f};
-      (*aste)[i].points[1] = {- 5.0f, - 8.0f, 1.0f};
-      (*aste)[i].points[2] = {- 3.0f, - 8.0f, 1.0f};
-      (*aste)[i].points[3] = {  0.0f,   5.0f, 1.0f};
-      (*aste)[i].points[4] = {  8.0f, - 0.0f, 1.0f};
-      (*aste)[i].points[5] = {  5.0f, - 8.0f, 1.0f};
-      (*aste)[i].points[6] = {  0.0f,   2.0f, 1.0f};
+      int random = rand()%4;
+      switch (random){
+        case 0: (*aste)[i].nPoints = 10; break;
+        case 1: (*aste)[i].nPoints = 12; break;
+        case 2: (*aste)[i].nPoints = 12; break;
+        case 3: (*aste)[i].nPoints = 11; break;
+      }
+      (*aste)[i].points = AsteroidShapes(random);
       (*aste)[i].size = actualSize - 1; // size also functions as lives
       (*aste)[i].pos = actualPos;
       (*aste)[i].speed = {-1.0f + (float)(rand()%3), -1.0f + (float)(rand()%3)}; // random speed between -1 ad +1
@@ -90,20 +166,19 @@ void SplitAste(Asteroids **aste){
 }
 
 /*
+    *(vertices)     = {-0.20f,  -0.40f}; //A
+    *(vertices + 1) = { 0.00f,  -0.60f}; //B
+    *(vertices + 2) = { 0.20f,  -0.40f}; //C
+    *(vertices + 3) = { 0.40f,  -0.60f}; //D
+    *(vertices + 4) = { 0.60f,  -0.40f}; //E
+    *(vertices + 5) = { 0.40f,  -0.16f}; //F
+    *(vertices + 6) = { 0.52f,   0.00f}; //G
+    *(vertices + 7) = { 0.40f,   0.20f}; //H
+    *(vertices + 8) = { 0.00f,   0.20f}; //I
+    *(vertices + 9) = {-0.20f,   0.00f}; //J
 
-/////////// ASTEROIDS SHAPES ///////////
-
-void VertsAsteroid_A(esat::Vec2 *vertices){
-  *(vertices)     = {-0.20f,  -0.40f}; //A
-  *(vertices + 1) = { 0.00f,  -0.60f}; //B
-  *(vertices + 2) = { 0.20f,  -0.40f}; //C
-  *(vertices + 3) = { 0.40f,  -0.60f}; //D
-  *(vertices + 4) = { 0.60f,  -0.40f}; //E
-  *(vertices + 5) = { 0.40f,  -0.16f}; //F
-  *(vertices + 6) = { 0.52f,   0.00f}; //G
-  *(vertices + 7) = { 0.40f,   0.20f}; //H
-  *(vertices + 8) = { 0.00f,   0.20f}; //I
-  *(vertices + 9) = {-0.20f,   0.00f}; //J
+  break;
+  case 1;
 }
 
 void VertsAsteroid_B(esat::Vec2 *vertices){
@@ -149,4 +224,5 @@ void VertsAsteroid_D(esat::Vec2 *vertices){
   *(vertices + 9)  =  {-0.51f,   0.00f};
   *(vertices + 10) =  {-0.64f,   0.10f};
 }
+
 */
