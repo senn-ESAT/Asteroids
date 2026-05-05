@@ -39,6 +39,13 @@ void initialScreen(int *option, int *screenP){
     }
   }
 }
+void Scores(int p1){
+  esat::DrawSetFillColor(255,255,255);
+  esat::DrawText(20, 30, "00");               // P1 hs
+  esat::DrawText(ScreenX/2 - 30, 30, "00");   // max hs
+  
+  esat::DrawText(ScreenX - 50, 30, "00");     // P2 hs
+}
 
 void HSList(){
 
@@ -68,10 +75,6 @@ void Menu(int *page, Account *user, int *option, int *screen){
   }
   dCredit[2] = '\0';
 
-  printf(" --> Start Drawing");
-  esat::DrawText(20, 30, "00");               // P1 hs
-  esat::DrawText(ScreenX/2 - 30, 30, "00");   // max hs
-  esat::DrawText(ScreenX - 50, 30, "00");     // P2 hs
   printf(" --> NAME");
   if(user->nick){
     fputs(user->nick, stdout);
@@ -100,7 +103,8 @@ void Menu(int *page, Account *user, int *option, int *screen){
   }
   printf(" -------- [MENU END] -------- \n");
 }
-
+///////////////////////////////// del FROGGER
+/////////////////////////////////
 /*
 void DubujarMenu(){
   switch(TipoMenu){

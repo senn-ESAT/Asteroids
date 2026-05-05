@@ -17,6 +17,7 @@
 const unsigned int ScreenX = 800;
 const unsigned int ScreenY = 600;
 const float max_speed = 7.0f; // no need for this as a global
+int nAste = 0;
 
 ////////PAGES////////
 #include "./MathLib.h"
@@ -62,8 +63,11 @@ void DrawThings(Ship ship, Bullet *bullets, Asteroids *aste, UFO *enemy){
   }
 
   printf("3");
-  for(int i = 0; i < 5; i++){
+  for(int i = 0; i < nAste; i++){
     esat::Mat3 a = MatAsteroid(aste[i].pos, aste[i].size);
+    if(aste[i].size > 50){
+      printf("\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n");
+    }
 
     DrawAsteroid(a, aste[i].points, aste[i].nPoints);
   }
@@ -118,7 +122,7 @@ void Move(Ship *ship, Bullet **bullets, Asteroids **aste, UFO *enemy){
     }
   }
 
-  for(int i = 0; i < 5; i++){
+  for(int i = 0; i < nAste; i++){
     (*aste)[i].pos = mm::sumVec2((*aste)[i].pos, (*aste)[i].speed);
   }
 }
@@ -217,7 +221,7 @@ void InGame(Ship *ship, Bullet **bullets, Asteroids **asteroid, UFO *enemy){
 int esat::main(int argc, char** argv) {
   //////////////LOGIC/////////////
   double current_time = 0.0, last_time = 0.0, fps = 60.0;
-  int screenSelector = 0, option = 0, formSection = 0, lvl = 0, menuPage = 0;   // 0 login/registrar 1 menu de juego 2 juego
+  int screenSelector = 0, option = 0, formSection = 0, lvl = 1, menuPage = 0;   // 0 login/registrar 1 menu de juego 2 juego
   ////////SOLO 1 DE ESTOS/////////
   Ship ship = {{ScreenX/2.0f, ScreenY/2.0f}, {0.0f, 0.0f}};
   UFO enemy;
@@ -254,9 +258,11 @@ int esat::main(int argc, char** argv) {
         Usersmanagement(&screenSelector, &option, &formSection, &user);
       break;
       case 1: //game menu
+        Scores(ship.score /*HS as well*/);
         Menu(&menuPage, &user, &option, &screenSelector);
       break;
       case 2: // game screen
+        Scores(ship.score /*HS as well*/);
         InGame(&ship, &bullets, &asteroid, &enemy);
       break;
       case 3: // admin
@@ -273,7 +279,11 @@ int esat::main(int argc, char** argv) {
     }else if(esat::IsSpecialKeyPressed(esat::kSpecialKey_Keypad_3)){
       screenSelector = 3;
     }else if(esat::IsSpecialKeyPressed(esat::kSpecialKey_Keypad_9)){
-      SplitAste(&asteroid);
+      int lasone = SplitAste(&asteroid, rand()%nAste);
+      if(lasone){
+        lvl++;
+        initAsteroids(&asteroid, 5+lvl);
+      }
     }
     
     esat::DrawEnd();
