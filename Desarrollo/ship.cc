@@ -3,7 +3,8 @@ struct Ship{
   mm::Vec2 speed;
   float angulo = 0.0f;
   float *puntosNave;
-  int health, score;
+  int health = 3, healthGained = 1, score;
+  double deathTime, noHit;
 };
 
 float* ShipShape(float angle_a, float angle_b, float angle_c, mm::Vec2 pos){
@@ -28,9 +29,6 @@ void initShip(Ship *ship){
   float angle_c = 161.0f + angle_a;
 
   ship->puntosNave = ShipShape(angle_a, angle_b, angle_c, ship->pos);
-
-  ship->health = 3;
-
 }
 
 void Controls(Ship *ship, Bullet **bullets){
@@ -78,3 +76,14 @@ void Controls(Ship *ship, Bullet **bullets){
     ElimBullet(&(*bullets));
   }
 }
+
+// TO-DO cosas relativas a la muerte del player
+// void SpawnShip(Ship player){
+//   if(player.noHit + 2000 > esat::Time()){
+    
+//   }
+// }
+
+// void DeathAnimation(Ship){
+
+// }

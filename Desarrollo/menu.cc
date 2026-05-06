@@ -1,4 +1,4 @@
-void initialScreen(int *option, int *screenP){
+void initialScreen(int *option, int *screenP, Ship *ship){
   esat::DrawSetFillColor(255,255,255);
   esat::DrawSetTextSize(70);
   esat::DrawText(230, 200, "ASTEROID");
@@ -26,11 +26,13 @@ void initialScreen(int *option, int *screenP){
     *option += 1;
   }
 
-  if(esat::IsSpecialKeyPressed(esat::kSpecialKey_Enter)){
+  if(esat::IsSpecialKeyDown(esat::kSpecialKey_Enter)){
     switch(*option){
     case 0:
       // if(credit > 0){
         *screenP = 2; // start game
+        ship->noHit = esat::Time();
+        ship->health = 3;
       // }      
     break;
     case 1:
@@ -39,9 +41,13 @@ void initialScreen(int *option, int *screenP){
     }
   }
 }
+
 void Scores(int p1){
+  char *p1Score = (char*)malloc(5 * sizeof(char));
+  itoa(p1 + 100000, p1Score, 10);
+
   esat::DrawSetFillColor(255,255,255);
-  esat::DrawText(20, 30, "00");               // P1 hs
+  esat::DrawText(20, 30, p1Score + 1);            // P1 hs
   esat::DrawText(ScreenX/2 - 30, 30, "00");   // max hs
   
   esat::DrawText(ScreenX - 50, 30, "00");     // P2 hs
@@ -61,7 +67,7 @@ void HSList(){
   esat::DrawText((ScreenX/2)-200, 450, "5 TH              PTS");
 }
 
-void Menu(int *page, Account *user, int *option, int *screen){
+void Menu(int *page, Account *user, int *option, int *screen, Ship *ship){
   printf(" -------- [MENU START] -------- \n");
   printf("--> dCredit");
   char *dCredit;
@@ -88,7 +94,7 @@ void Menu(int *page, Account *user, int *option, int *screen){
   printf(" --> MENU PAGES");
   switch (*page){
     case 0:
-      initialScreen(&(*option), &(*screen));
+      initialScreen(&(*option), &(*screen), &(*ship));
     break;
     case 1:
       HSList();
@@ -103,8 +109,9 @@ void Menu(int *page, Account *user, int *option, int *screen){
   }
   printf(" -------- [MENU END] -------- \n");
 }
-///////////////////////////////// del FROGGER
-/////////////////////////////////
+//////////////////////////////////
+//        DEL FROGGER           //
+//////////////////////////////////
 /*
 void DubujarMenu(){
   switch(TipoMenu){

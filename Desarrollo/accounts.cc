@@ -28,7 +28,7 @@ void InitAccount(Account *user){
   user->nick =    (char*)malloc(17*sizeof(char));
   user->mail =    (char*)malloc(17*sizeof(char));
   user->psw =     (char*)malloc(17*sizeof(char));
-  user->birth =   (char*)malloc(17*sizeof(char));
+  user->birth =   (char*)malloc(9*sizeof(char));  // dd-mm-yyyy = 8+\0 = 9
   user->province= (char*)malloc(17*sizeof(char));
   user->nation =  (char*)malloc(17*sizeof(char));
 
@@ -137,7 +137,7 @@ int CheckValidity(Account **users, bool option){
   temp.nick =    (char*)malloc(17*sizeof(char));
   temp.mail =    (char*)malloc(17*sizeof(char));
   temp.psw =     (char*)malloc(17*sizeof(char));
-  temp.birth =   (char*)malloc(17*sizeof(char));
+  temp.birth =   (char*)malloc(9*sizeof(char));
   temp.province= (char*)malloc(17*sizeof(char));
   temp.nation =  (char*)malloc(17*sizeof(char));
   
@@ -148,7 +148,7 @@ int CheckValidity(Account **users, bool option){
     f1 = fopen("accounts.dat", "rb");
     if(f1 != NULL){
       printf("[FILE EXIST]\n");
-      while(fread(&temp, sizeof(temp), 1, f1)){
+      while(fread(&temp, sizeof(Account), 1, f1)){
         if(strcmp((*users)->mail, temp.mail) == 0 && strcmp((*users)->psw, temp.psw)){
           printf("[SUCCESS]\n");
           *(*users) = temp;
@@ -180,7 +180,7 @@ int CheckValidity(Account **users, bool option){
     f1 = fopen("accounts.dat", "rb");
     if(f1 != NULL){
       printf("[FILE EXIST]\n");
-      while(fread(&temp, sizeof(temp), 1, f1)){
+      while(fread(&temp, sizeof(Account), 1, f1)){
         printf("[LOOP]\n");
 
         // if account alredy exist then stop and exit
@@ -217,7 +217,7 @@ int CheckValidity(Account **users, bool option){
     writeString(&f1, temp.name, 4);
     writeString(&f1, temp.surname, 17);
     writeString(&f1, temp.mail, 17);
-    writeString(&f1, temp.birth, 17);
+    writeString(&f1, temp.birth, 9);
     writeString(&f1, temp.province, 17);
     writeString(&f1, temp.nation, 17);
     writeString(&f1, temp.nick, 17);
@@ -281,7 +281,17 @@ void Register(int *form, Account *user, int *screen){
   esat::DrawText(50, 400, "BIRTH YEAR:");
   formSquare[1] += 50;
   UpdateFormSection(&(*formSquare), 300);
-  esat::DrawText(formSquare[6] + 10, formSquare[7] - 5, user->birth);
+  char *letter = (char*)malloc(2 * sizeof(char)); 
+  letter[0] = user->birth[0]; letter[0] = '\0';
+
+  // TO-DO FINISH THIS BULLSHIT
+  esat::DrawText(formSquare[6] + 10, formSquare[7] - 5, letter); letter[0] = user->birth[1];
+  esat::DrawText(formSquare[6] + 10, formSquare[7] - 5, letter); letter[0] = user->birth[2];
+  esat::DrawText(formSquare[6] + 10, formSquare[7] - 5, letter); letter[0] = user->birth[3];
+  esat::DrawText(formSquare[6] + 10, formSquare[7] - 5, letter); letter[0] = user->birth[4];
+  esat::DrawText(formSquare[6] + 10, formSquare[7] - 5, letter); letter[0] = user->birth[5];
+  esat::DrawText(formSquare[6] + 10, formSquare[7] - 5, letter); letter[0] = user->birth[6];
+
   esat::DrawPath(formSquare, 5);
 
   esat::DrawText(50, 450, "PROVINCE:");

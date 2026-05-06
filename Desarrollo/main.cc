@@ -25,17 +25,26 @@ int nAste = 0;
 #include "./asteroids.cc"
 #include "./enemies.cc"
 #include "./accounts.cc"
-#include "./menu.cc"
 #include "./ship.cc"
+#include "./menu.cc"
 
 void DrawThings(Ship ship, Bullet *bullets, Asteroids *aste, UFO *enemy){
   printf("1");
   esat::DrawSetStrokeColor(255, 255, 255);
-  esat::DrawPath(ship.puntosNave, 4);
+  if(ship.noHit + 2000 > esat::Time()){
+    printf("\n\nNOHITTIME: %f", ship.noHit);
+
+    if((int)(((ship.noHit + 2000) - esat::Time()) / 100)%2 == 0){
+      esat::DrawPath(ship.puntosNave, 4);
+    }
+  }else{
+    esat::DrawPath(ship.puntosNave, 4);
+  }
 
   // LIVES
   mm::Vec2 pos = {50, 50};
   float *health, angle = 180.0f;
+  printf("\n\n\n\n HEALTH: %d \n\n\n\n", ship.health);
   for(int i = 0; i < ship.health; i++){
     health = ShipShape(angle, -161.0f + angle, 161.0f + angle, pos);
     esat::DrawPath(health, 4);
@@ -192,7 +201,21 @@ void CheckBorder(Ship *ship, Bullet **bullets, Asteroids **aste, UFO **enemy){
   }
 }
 
-void InGame(Ship *ship, Bullet **bullets, Asteroids **asteroid, UFO *enemy){
+void GameManager(Ship *ship, int *screen, int *menu){
+  // 10k vida ++
+  if(ship->health < 1){
+    // check hs, screen 1
+    *screen = 1;
+    *menu = 1;
+  }
+
+  if(ship->score - (10000 * ship->healthGained) > 0){
+    ship->health++;
+    ship->healthGained++;
+  }
+}
+
+void InGame(Ship *ship, Bullet **bullets, Asteroids **asteroid, UFO *enemy, int *screen, int *menu){
   printf("\n\n[initShip -->");
   initShip(&(*ship));
   SpawnUFO(&(*enemy));
@@ -212,6 +235,9 @@ void InGame(Ship *ship, Bullet **bullets, Asteroids **asteroid, UFO *enemy){
 
   printf(" BORDERS -->");
   CheckBorder(&*ship, &*bullets, &*asteroid, &enemy);
+
+  printf(" MANAGER -->");
+  GameManager(&*ship, &*screen, &*menu);
     
   // friction
   ship->speed = mm::scaleV2(ship->speed, 0.995f);
@@ -259,26 +285,30 @@ int esat::main(int argc, char** argv) {
       break;
       case 1: //game menu
         Scores(ship.score /*HS as well*/);
-        Menu(&menuPage, &user, &option, &screenSelector);
+        Menu(&menuPage, &user, &option, &screenSelector, &ship);
       break;
       case 2: // game screen
         Scores(ship.score /*HS as well*/);
-        InGame(&ship, &bullets, &asteroid, &enemy);
+        InGame(&ship, &bullets, &asteroid, &enemy, &screenSelector, &menuPage);
       break;
       case 3: // admin
         Admin(&option, &formSection);
       break;
     }
 
-    if(esat::IsSpecialKeyPressed(esat::kSpecialKey_Keypad_0)){
+    if(esat::IsSpecialKeyDown(esat::kSpecialKey_Keypad_0)){
       screenSelector = 0;
-    }else if(esat::IsSpecialKeyPressed(esat::kSpecialKey_Keypad_1)){
+    }else if(esat::IsSpecialKeyDown(esat::kSpecialKey_Keypad_1)){
       screenSelector = 1;
-    }else if(esat::IsSpecialKeyPressed(esat::kSpecialKey_Keypad_2)){
+    }else if(esat::IsSpecialKeyDown(esat::kSpecialKey_Keypad_2)){
       screenSelector = 2;
-    }else if(esat::IsSpecialKeyPressed(esat::kSpecialKey_Keypad_3)){
+    }else if(esat::IsSpecialKeyDown(esat::kSpecialKey_Keypad_3)){
       screenSelector = 3;
-    }else if(esat::IsSpecialKeyPressed(esat::kSpecialKey_Keypad_9)){
+    }else if(esat::IsSpecialKeyDown(esat::kSpecialKey_Keypad_7)){
+      ship.score += 1000; 
+    }else if(esat::IsSpecialKeyDown(esat::kSpecialKey_Keypad_8)){
+      ship.health--; 
+    }else if(esat::IsSpecialKeyDown(esat::kSpecialKey_Keypad_9)){
       int lasone = SplitAste(&asteroid, rand()%nAste);
       if(lasone){
         lvl++;
