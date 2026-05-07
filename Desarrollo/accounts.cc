@@ -82,10 +82,18 @@ void UpdateAccount(char **campo, int nLetters){
   if(input != 0){
     int length = strlen(*campo);
     if(length < nLetters){
-      (*campo)[length] = input;
-      (*campo)[length + 1] = '\0';
+      if(nLetters == 8){  // is birth
+        if(input >=48 && input <= 57){  //accept only numbers
+          (*campo)[length] = input;
+          (*campo)[length + 1] = '\0';
+        }
+      }else{
+        (*campo)[length] = input;
+        (*campo)[length + 1] = '\0';
+      }
     }
   }
+
   // delete
   if (esat::IsSpecialKeyDown(esat::kSpecialKey_Backspace)){
     int length = strlen(*campo);
@@ -106,6 +114,7 @@ void freeTemp(Account *temp){
   // free(temp->nation); temp->nation = NULL;
 }
 
+// Qué asco los punteros, Fede, porfa, para los ficheros, déjanos usar los arrays
 void writeString(FILE **f, char* text, int length){
   int i = 0;
   char mt = '\0';
@@ -117,7 +126,12 @@ void writeString(FILE **f, char* text, int length){
     fwrite(&mt, sizeof(char), 1, *f);
     i++;
   }
-  printf("\n[i]: %d\n", i);
+}
+
+char* readString(FILE *f, char *text, int length){
+    fread(text, sizeof(char), length, f);
+    text[length - 1] = '\0';
+    return text;
 }
 
 
@@ -148,8 +162,17 @@ int CheckValidity(Account **users, bool option){
     f1 = fopen("accounts.dat", "rb");
     if(f1 != NULL){
       printf("[FILE EXIST]\n");
-      while(fread(&temp, sizeof(Account), 1, f1)){
-        if(strcmp((*users)->mail, temp.mail) == 0 && strcmp((*users)->psw, temp.psw)){
+      while(fread(&temp.credit, sizeof(int), 1, f1) &&
+            fread(&temp.personalHS, sizeof(int), 1, f1) &&
+            readString(f1, temp.name, 4) &&
+            readString(f1, temp.surname, 17) &&
+            readString(f1, temp.mail, 17) &&
+            readString(f1, temp.birth, 9) &&
+            readString(f1, temp.province, 17) &&
+            readString(f1, temp.nation, 17) &&
+            readString(f1, temp.nick, 17) &&
+            readString(f1, temp.psw, 17)){
+        if(strcmp((*users)->mail, temp.mail) == 0 && strcmp((*users)->psw, temp.psw) == 0){
           printf("[SUCCESS]\n");
           *(*users) = temp;
           fclose(f1);
@@ -180,7 +203,16 @@ int CheckValidity(Account **users, bool option){
     f1 = fopen("accounts.dat", "rb");
     if(f1 != NULL){
       printf("[FILE EXIST]\n");
-      while(fread(&temp, sizeof(Account), 1, f1)){
+      while(fread(&temp.credit, sizeof(int), 1, f1) &&
+            fread(&temp.personalHS, sizeof(int), 1, f1) &&
+            readString(f1, temp.name, 4) &&
+            readString(f1, temp.surname, 17) &&
+            readString(f1, temp.mail, 17) &&
+            readString(f1, temp.birth, 9) &&
+            readString(f1, temp.province, 17) &&
+            readString(f1, temp.nation, 17) &&
+            readString(f1, temp.nick, 17) &&
+            readString(f1, temp.psw, 17)){
         printf("[LOOP]\n");
 
         // if account alredy exist then stop and exit
@@ -281,16 +313,21 @@ void Register(int *form, Account *user, int *screen){
   esat::DrawText(50, 400, "BIRTH YEAR:");
   formSquare[1] += 50;
   UpdateFormSection(&(*formSquare), 300);
-  char *letter = (char*)malloc(2 * sizeof(char)); 
-  letter[0] = user->birth[0]; letter[0] = '\0';
-
-  // TO-DO FINISH THIS BULLSHIT
-  esat::DrawText(formSquare[6] + 10, formSquare[7] - 5, letter); letter[0] = user->birth[1];
-  esat::DrawText(formSquare[6] + 10, formSquare[7] - 5, letter); letter[0] = user->birth[2];
-  esat::DrawText(formSquare[6] + 10, formSquare[7] - 5, letter); letter[0] = user->birth[3];
-  esat::DrawText(formSquare[6] + 10, formSquare[7] - 5, letter); letter[0] = user->birth[4];
-  esat::DrawText(formSquare[6] + 10, formSquare[7] - 5, letter); letter[0] = user->birth[5];
-  esat::DrawText(formSquare[6] + 10, formSquare[7] - 5, letter); letter[0] = user->birth[6];
+  char *letter = (char*)malloc(2 * sizeof(char));
+  letter[1] = '\0';
+  int j = 0;
+  for(int i = 0; i < 9 && i < strlen(user->birth); i++){
+    if(i != 0 && i%2 == 0 && i < 5){
+      j++;
+    }
+    letter[0] = user->birth[i];
+    esat::DrawText(formSquare[6] + 10 + (20*j), formSquare[7] - 5, letter);
+    j++;
+  }
+  letter[0] = '/';
+  for(int i = 1; i < 3; i++){
+    esat::DrawText(formSquare[6] + 10 * i + (45*i), formSquare[7] - 5, letter);
+  }
 
   esat::DrawPath(formSquare, 5);
 
@@ -330,7 +367,7 @@ void Register(int *form, Account *user, int *screen){
     case 2: UpdateAccount(&user->nick, 3);      break;
     case 3: UpdateAccount(&user->mail, 16);     break;
     case 4: UpdateAccount(&user->psw, 16);      break;
-    case 5: UpdateAccount(&user->birth, 16);    break;
+    case 5: UpdateAccount(&user->birth, 8);    break;
     case 6: UpdateAccount(&user->province, 16); break;
     case 7: UpdateAccount(&user->nation, 16);   break;
     case 8:
@@ -511,7 +548,16 @@ void Admin(int *option, int *userSelect){
     esat::DrawText(650, scroll + 15, "DELETE");
 
     printf("------------ADMIN------------\n");
-    while(fread(&temp, sizeof(temp), 1, f)){
+    while(fread(&temp.credit, sizeof(int), 1, f) &&
+          fread(&temp.personalHS, sizeof(int), 1, f) &&
+          readString(f, temp.name, 4) &&
+          readString(f, temp.surname, 17) &&
+          readString(f, temp.mail, 17) &&
+          readString(f, temp.birth, 9) &&
+          readString(f, temp.province, 17) &&
+          readString(f, temp.nation, 17) &&
+          readString(f, temp.nick, 17) &&
+          readString(f, temp.psw, 17)){
       printf("DrawLine\n");
       esat::DrawLine(100.0f, (scroll - 30), 700.0f, (scroll - 30));
 
