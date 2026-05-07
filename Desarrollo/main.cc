@@ -26,19 +26,22 @@ int nAste = 0;
 #include "./enemies.cc"
 #include "./accounts.cc"
 #include "./ship.cc"
+#include "./scoreBoard.cc"
 #include "./menu.cc"
 
 void DrawThings(Ship ship, Bullet *bullets, Asteroids *aste, UFO *enemy){
   printf("1");
   esat::DrawSetStrokeColor(255, 255, 255);
-  if(ship.noHit + 2000 > esat::Time()){
-    printf("\n\nNOHITTIME: %f", ship.noHit);
-
-    if((int)(((ship.noHit + 2000) - esat::Time()) / 100)%2 == 0){
+  if(ship.deathTime+1000 < esat::Time()){
+    if(ship.noHit + 2000 > esat::Time()){
+      printf("\n\nNOHITTIME: %f", ship.noHit);
+  
+      if((int)(((ship.noHit + 2000) - esat::Time()) / 100)%2 == 0){
+        esat::DrawPath(ship.puntosNave, 4);
+      }
+    }else{
       esat::DrawPath(ship.puntosNave, 4);
     }
-  }else{
-    esat::DrawPath(ship.puntosNave, 4);
   }
 
   // LIVES
@@ -111,7 +114,9 @@ void DrawThings(Ship ship, Bullet *bullets, Asteroids *aste, UFO *enemy){
 }
 
 void Move(Ship *ship, Bullet **bullets, Asteroids **aste, UFO *enemy){
-  ship->pos = mm::sumVec2(ship->pos, ship->speed);
+  if(ship->deathTime+1000 < esat::Time()){
+    ship->pos = mm::sumVec2(ship->pos, ship->speed);
+  }
   
   if(enemy->alive){
     enemy->pos = mm::sumVec2(enemy->pos, enemy->speed);
@@ -157,7 +162,7 @@ void pacman(mm::Vec2 *coord, int *way){
 void CheckBorder(Ship *ship, Bullet **bullets, Asteroids **aste, UFO **enemy){
   int colision = 0;
   colision = checkBorderColisions(ship->pos);
-  if(colision != 0){
+  if(colision != 0 && ship->deathTime+1000 < esat::Time()){
     pacman(&ship->pos, &colision);
   }
 
@@ -209,6 +214,12 @@ void GameManager(Ship *ship, int *screen, int *menu){
     *menu = 1;
   }
 
+  if(ship->dying){
+    if(ship->deathTime + 1000 < esat::Time()){
+      SpawnShip(&(*ship));
+    }
+  }
+
   if(ship->score - (10000 * ship->healthGained) > 0){
     ship->health++;
     ship->healthGained++;
@@ -255,6 +266,7 @@ int esat::main(int argc, char** argv) {
   ////////////PUNTEROS////////////
   Bullet *bullets = nullptr;
   Asteroids *asteroid = nullptr;
+  ScoreBoard *scoreList = nullptr;
   
   srand(time(nullptr));
   esat::WindowInit(ScreenX, ScreenY);
@@ -268,6 +280,8 @@ int esat::main(int argc, char** argv) {
   initUFO(&enemy);
   printf("[INIT ACCOUNT]\n");
   InitAccount(&user);
+  printf("[LOAD SCORELIST]\n");
+  InitScoreList(&scoreList);
   printf("---------[END INIT]--------\n");
 
 
@@ -285,7 +299,7 @@ int esat::main(int argc, char** argv) {
       break;
       case 1: //game menu
         Scores(ship.score /*HS as well*/);
-        Menu(&menuPage, &user, &option, &screenSelector, &ship);
+        Menu(&menuPage, &user, &option, &screenSelector, &ship, scoreList);
       break;
       case 2: // game screen
         Scores(ship.score /*HS as well*/);
@@ -307,7 +321,8 @@ int esat::main(int argc, char** argv) {
     }else if(esat::IsSpecialKeyDown(esat::kSpecialKey_Keypad_7)){
       ship.score += 1000; 
     }else if(esat::IsSpecialKeyDown(esat::kSpecialKey_Keypad_8)){
-      ship.health--; 
+      ship.health--;
+      ship.deathTime = esat::Time();
     }else if(esat::IsSpecialKeyDown(esat::kSpecialKey_Keypad_9)){
       int lasone = SplitAste(&asteroid, rand()%nAste);
       if(lasone){
@@ -322,6 +337,9 @@ int esat::main(int argc, char** argv) {
       current_time = esat::Time();
     } while((current_time - last_time) <= 1000.0 / fps);
   }
+
+  // TO-DO salvar los cambios de usiario
+
   esat::WindowDestroy();
   return 0;
 }

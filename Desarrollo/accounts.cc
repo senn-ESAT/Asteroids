@@ -384,9 +384,8 @@ void Register(int *form, Account *user, int *screen){
   }
 
   if(error == true){
-    printf("Entered ERROR");
     esat::DrawSetFillColor(255,0,0);
-    esat::DrawText(ScreenX + 150, 550, "NOT VALID");
+    esat::DrawText(ScreenX/2 + 100, 550, "NOT VALID");
   }
 }
 
@@ -445,9 +444,8 @@ void LogIn(int *form, Account *user, int *screen){
   }
 
   if(error){
-    printf("Entered ERROR");
     esat::DrawSetFillColor(255,0,0);
-    esat::DrawText(ScreenX + 150, 550, "NOT VALID");
+    esat::DrawText(ScreenX/2 + 100, 550, "NOT VALID");
   }
 }
 

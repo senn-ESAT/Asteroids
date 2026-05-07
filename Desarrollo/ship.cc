@@ -4,7 +4,8 @@ struct Ship{
   float angulo = 0.0f;
   float *puntosNave;
   int health = 3, healthGained = 1, score;
-  double deathTime, noHit;
+  double deathTime = 0.0f, noHit = 0.0f;
+  bool dying = false;
 };
 
 float* ShipShape(float angle_a, float angle_b, float angle_c, mm::Vec2 pos){
@@ -57,6 +58,7 @@ void Controls(Ship *ship, Bullet **bullets){
 
   if(esat::IsKeyDown('g') || esat::IsKeyDown('G')){
     ship->pos = {(float)(rand()%800), (float)(rand()%600)};
+    ship->noHit = esat::Time();
   }
 
   // shoot
@@ -77,12 +79,13 @@ void Controls(Ship *ship, Bullet **bullets){
   }
 }
 
-// TO-DO cosas relativas a la muerte del player
-// void SpawnShip(Ship player){
-//   if(player.noHit + 2000 > esat::Time()){
-    
-//   }
-// }
+void SpawnShip(Ship *player){
+  player->noHit = esat::Time();
+  player->pos = {ScreenX/2, ScreenY/2};
+  player->speed = {0.0f, 0.0f};
+  player->angulo = 0.0f;   
+  player->dying = false; 
+}
 
 // void DeathAnimation(Ship){
 
