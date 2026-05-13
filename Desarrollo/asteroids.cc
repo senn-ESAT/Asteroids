@@ -1,3 +1,8 @@
+struct colisionArea{
+  int nPoints;
+  esat::Vec3 *area;   // puntos area
+};
+
 struct Asteroids{
   float size;
   int nPoints, nAreas;
@@ -136,10 +141,13 @@ colisionArea* asteAreas(int n){
 }
 
 void ValuesAste(Asteroids **aste, int i){
-  int random = rand()%4;
-
+  //int random = rand()%4;
+  int random = 0;
   switch (random){
-  case 0: (*aste)[i].nPoints = 10; break;
+  case 0: 
+    (*aste)[i].nPoints = 10; 
+    (*aste)[i].nAreas = 2;
+   break;
   case 1: (*aste)[i].nPoints = 12; break;
   case 2: (*aste)[i].nPoints = 12; break;
   case 3: (*aste)[i].nPoints = 11; break;
@@ -147,6 +155,7 @@ void ValuesAste(Asteroids **aste, int i){
 
   (*aste)[i].points = AsteroidShapes(random);
   (*aste)[i].areas = asteAreas(random);
+
 
   (*aste)[i].size = 40.0f; // size also functions as lives
   (*aste)[i].pos = {(float)(rand()%800), (float)(rand()%600)};   // random position 

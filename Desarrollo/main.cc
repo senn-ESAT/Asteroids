@@ -22,15 +22,15 @@ int nAste = 0;
 ////////PAGES////////
 #include "./MathLib.h"
 #include "./bullet.cc"
-#include "./colision.cc"
 #include "./asteroids.cc"
 #include "./enemies.cc"
 #include "./accounts.cc"
 #include "./ship.cc"
+#include "./colision.cc"
 #include "./scoreBoard.cc"
 #include "./menu.cc"
 
-void DrawThings(Ship ship, Bullet *bullets, Asteroids *aste, UFO *enemy){
+esat::Mat3* DrawThings(Ship ship, Bullet *bullets, Asteroids *aste, UFO *enemy){
   printf("1");
   esat::DrawSetStrokeColor(255, 255, 255);
   if(ship.deathTime+1000 < esat::Time()){
@@ -75,20 +75,23 @@ void DrawThings(Ship ship, Bullet *bullets, Asteroids *aste, UFO *enemy){
     }
   }
 
+  esat::Mat3 *mat;
+  mat = (esat::Mat3*)malloc(2*sizeof(esat::Mat3));
+
   printf("3");
   for(int i = 0; i < nAste; i++){
-    esat::Mat3 a = MatAsteroid(aste[i].pos, aste[i].size);
+    mat[0] = MatAsteroid(aste[i].pos, aste[i].size);
     if(aste[i].size > 50){
       printf("\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n");
     }
 
-    DrawAsteroid(a, aste[i].points, aste[i].nPoints);
+    DrawAsteroid(mat[0], aste[i].points, aste[i].nPoints);
   }
 
   if(enemy->alive){
     printf("4");
-    esat::Mat3 a = MatAsteroid(enemy->pos, enemy->size);
-    DrawAsteroid(a, enemy->UFOPoints, 12);
+    mat[1] = MatAsteroid(enemy->pos, enemy->size);
+    DrawAsteroid(mat[1], enemy->UFOPoints, 12);
     printf(" BULLETS: %d ", BulletAmount(enemy->enemyBullets));
     if(BulletAmount(enemy->enemyBullets) != 0){
       printf("5");
@@ -112,6 +115,7 @@ void DrawThings(Ship ship, Bullet *bullets, Asteroids *aste, UFO *enemy){
   }
 
   printf("DRAW END ");
+  return mat;
 }
 
 void Move(Ship *ship, Bullet **bullets, Asteroids **aste, UFO *enemy){
@@ -233,7 +237,7 @@ void InGame(Ship *ship, Bullet **bullets, Asteroids **asteroid, UFO *enemy, int 
   SpawnUFO(&(*enemy));
   
   printf(" DRAW -->");
-  DrawThings(*ship, *bullets, *asteroid, enemy);
+  esat::Mat3 *m = DrawThings(*ship, *bullets, *asteroid, enemy);
 
   printf(" CONTROLS -->");
   Controls(&*ship, &*bullets);
@@ -247,6 +251,9 @@ void InGame(Ship *ship, Bullet **bullets, Asteroids **asteroid, UFO *enemy, int 
 
   printf(" BORDERS -->");
   CheckBorder(&*ship, &*bullets, &*asteroid, &enemy);
+
+  printf(" COLISION -->");
+  CheckCollisions(&*ship, &*bullets, &*asteroid, &enemy, m);
 
   printf(" MANAGER -->");
   GameManager(&*ship, &*screen, &*menu);
@@ -283,6 +290,8 @@ int esat::main(int argc, char** argv) {
   InitAccount(&user);
   printf("[LOAD SCORELIST]\n");
   InitScoreList(&scoreList);
+  printf("[AddAdmin]\n");
+  //AddAdmin();
   printf("---------[END INIT]--------\n");
 
 

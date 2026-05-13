@@ -1,5 +1,6 @@
 struct Account{
   int credit, personalHS;
+  bool admin = false;
   char  *name,
         *surname,
         *mail,
@@ -134,6 +135,47 @@ char* readString(FILE *f, char *text, int length){
     return text;
 }
 
+void AddAdmin(){
+  FILE *f1;
+  f1 = fopen("accounts.dat", "rb+");
+  if(f1 == NULL){
+    Account temp;
+    temp.name =    (char*)malloc(4*sizeof(char));
+    temp.surname = (char*)malloc(17*sizeof(char));
+    temp.nick =    (char*)malloc(17*sizeof(char));
+    temp.mail =    (char*)malloc(17*sizeof(char));
+    temp.psw =     (char*)malloc(17*sizeof(char));
+    temp.birth =   (char*)malloc(9*sizeof(char));
+    temp.province= (char*)malloc(17*sizeof(char));
+    temp.nation =  (char*)malloc(17*sizeof(char));
+
+    temp.mail = "admin\0";
+    temp.psw = "a123456\0";
+    temp.credit = 0;
+    temp.personalHS = 0;
+    temp.admin = true;
+
+    temp.name[0] =    '\0';
+    temp.surname[0] = '\0';
+    temp.nick[0] =    '\0';
+    temp.birth[0] =   '\0';
+    temp.province[0]= '\0';
+    temp.nation[0] =  '\0';
+
+    fwrite(&temp.credit, sizeof(temp.credit), 1, f1);
+    fwrite(&temp.personalHS, sizeof(temp.personalHS), 1, f1);
+    fwrite(&temp.admin, sizeof(temp.admin), 1, f1);
+
+    writeString(&f1, temp.name, 4);
+    writeString(&f1, temp.surname, 17);
+    writeString(&f1, temp.mail, 17);
+    writeString(&f1, temp.birth, 9);
+    writeString(&f1, temp.province, 17);
+    writeString(&f1, temp.nation, 17);
+    writeString(&f1, temp.nick, 17);
+    writeString(&f1, temp.psw, 17);
+  }
+}
 
 int CheckValidity(Account **users, bool option){
   printf("\n------[STARTING VERIFICATION]------\n");
@@ -164,6 +206,7 @@ int CheckValidity(Account **users, bool option){
       printf("[FILE EXIST]\n");
       while(fread(&temp.credit, sizeof(int), 1, f1) &&
             fread(&temp.personalHS, sizeof(int), 1, f1) &&
+            fread(&temp.admin, sizeof(bool), 1, f1) &&
             readString(f1, temp.name, 4) &&
             readString(f1, temp.surname, 17) &&
             readString(f1, temp.mail, 17) &&
@@ -205,6 +248,7 @@ int CheckValidity(Account **users, bool option){
       printf("[FILE EXIST]\n");
       while(fread(&temp.credit, sizeof(int), 1, f1) &&
             fread(&temp.personalHS, sizeof(int), 1, f1) &&
+            fread(&temp.admin, sizeof(bool), 1, f1) &&
             readString(f1, temp.name, 4) &&
             readString(f1, temp.surname, 17) &&
             readString(f1, temp.mail, 17) &&
@@ -244,6 +288,7 @@ int CheckValidity(Account **users, bool option){
     printf(" --> WRITE NUMBERS");
     fwrite(&temp.credit, sizeof(temp.credit), 1, f1);
     fwrite(&temp.personalHS, sizeof(temp.personalHS), 1, f1);
+    fwrite(&temp.admin, sizeof(temp.admin), 1, f1);
 
     printf(" --> WRITE STRING");
     writeString(&f1, temp.name, 4);
@@ -522,32 +567,41 @@ void Admin(int *option, int *userSelect){
     esat::DrawSetTextSize(20);
     
     int HowMany = 0;
-    float scroll = 150.0f, *formSquare, *arrow;
+    float scroll = 150.0f - (*userSelect * 80), *formSquare, *arrow;
     arrow = ArrowShape(1);
     esat::DrawSolidPath(arrow, 3);
 
-    // formSquare = (float*)malloc(10*sizeof(float));
-    // formSquare[0] = 520;  // x p1
-    // formSquare[1] = 120;  // y p1
-    // UpdateFormSection(&(*formSquare), 120);
-  
-    // TO-DO Terminar los botones y entender crash
-    // if(*option < 1){
-    //   esat::DrawPath(formSquare, 5);
-    // }
-    // else{
-    //   esat::DrawSolidPath(formSquare, 5);
-    //   esat::DrawSetFillColor(0,0,0);
-    // }
+    float *selectionSquare;
+    selectionSquare = (float*)malloc(10*sizeof(float));
+
+    if(*option == 1){
+      selectionSquare[0] = 520;            // x p1
+      selectionSquare[2] = selectionSquare[0] + 60;  // x p2
+    }else if (*option == 2){
+      selectionSquare[0] = 650;  // x p1
+      selectionSquare[2] = selectionSquare[0] + 80;  // x p2
+    }
+
+    selectionSquare[1] = 140;                  // y p1
+    selectionSquare[3] = 140;                  // y p2
+    selectionSquare[4] = selectionSquare[2];  // x p3
+    selectionSquare[5] = 180;                  // y p3
+    selectionSquare[6] = selectionSquare[0];  // x p4
+    selectionSquare[7] = 180;                  // y p4
+    selectionSquare[8] = selectionSquare[0];  // x p5
+    selectionSquare[9] = 140;                  // y p6
+
+    esat::DrawPath(selectionSquare, 5);
 
     printf("\nOPTION: %d, USERSELECT: %d\n", *option, *userSelect);
     
-    esat::DrawText(530, scroll + 15, "EDIT");
-    esat::DrawText(650, scroll + 15, "DELETE");
+    esat::DrawText(530, 95, "EDIT");
+    esat::DrawText(650, 95, "DELETE");
 
     printf("------------ADMIN------------\n");
     while(fread(&temp.credit, sizeof(int), 1, f) &&
           fread(&temp.personalHS, sizeof(int), 1, f) &&
+          fread(&temp.admin, sizeof(bool), 1, f) &&
           readString(f, temp.name, 4) &&
           readString(f, temp.surname, 17) &&
           readString(f, temp.mail, 17) &&
@@ -557,9 +611,9 @@ void Admin(int *option, int *userSelect){
           readString(f, temp.nick, 17) &&
           readString(f, temp.psw, 17)){
       printf("DrawLine\n");
+      esat::DrawSetStrokeColor(255,255,255);
       esat::DrawLine(100.0f, (scroll - 30), 700.0f, (scroll - 30));
 
-      printf("[NICK: ");  fputs(temp.nick, stdout);
       if(temp.nick){
         for(int i = 0; i < 4; i++){
           printf("%c", temp.nick[i]);
@@ -581,18 +635,24 @@ void Admin(int *option, int *userSelect){
     fclose(f);
     esat::DrawSetTextSize(30);
   
-    printf("MENU INPUTS\n");
-    if(esat::IsSpecialKeyDown(esat::kSpecialKey_Right) && *option != 2){
+    if(esat::IsSpecialKeyDown(esat::kSpecialKey_Right) && *option < 2){
       *option += 1;
-    }else if(esat::IsSpecialKeyDown(esat::kSpecialKey_Left) && *option != 0){
+    }else if(esat::IsSpecialKeyDown(esat::kSpecialKey_Left) && *option > 0){
       *option -= 1;
     }else if(esat::IsSpecialKeyDown(esat::kSpecialKey_Up) && *userSelect > 0){
       *userSelect -= 1;
-    }else if(esat::IsSpecialKeyDown(esat::kSpecialKey_Down) && *userSelect < HowMany){
+    }else if(esat::IsSpecialKeyDown(esat::kSpecialKey_Down) && *userSelect < HowMany && HowMany > 1){
       *userSelect += 1;
     }
     if(esat::IsSpecialKeyDown(esat::kSpecialKey_Enter) && *option > 0){
-      // TO-DO cambia paginas a o edit o elim dempendiendo de option si es 1 o 2
+      switch (*option){
+      case 1: // edit
+      
+      break;
+      case 2: // delete user
+
+      break;
+      }
     }
 
     printf("FREE temp\n");
