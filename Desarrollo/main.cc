@@ -22,6 +22,7 @@ int nAste = 0;
 ////////PAGES////////
 #include "./MathLib.h"
 #include "./bullet.cc"
+#include "./colision.cc"
 #include "./asteroids.cc"
 #include "./enemies.cc"
 #include "./accounts.cc"

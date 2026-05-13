@@ -1,12 +1,11 @@
 struct Asteroids{
   float size;
-  int nPoints;
+  int nPoints, nAreas;
   mm::Vec2 pos, speed;
   esat::Vec3 *points;
-  // TO-DO colision areas
+  colisionArea* areas;
 };
 
-const int kNPoints = 20;
 
 esat::Mat3 MatAsteroid(mm::Vec2 pos, float size){
   esat::Mat3 m = esat::Mat3Identity();
@@ -20,9 +19,7 @@ esat::Mat3 MatAsteroid(mm::Vec2 pos, float size){
 }
 
 void DrawAsteroid(esat::Mat3 m, esat::Vec3 *points, int nPoint) {
-  
-//  esat::Vec2 tr_circle[kNPoints];
-  esat::Vec2 *tr_circle = nullptr;
+    esat::Vec2 *tr_circle = nullptr;
   tr_circle = (esat::Vec2*)malloc(nPoint * sizeof(esat::Vec2));
 
   for (int i = 0; i < nPoint; ++i) {
@@ -103,17 +100,54 @@ esat::Vec3* AsteroidShapes(int n){
   return vertices;
 }
 
+colisionArea* asteAreas(int n){
+  colisionArea *areas;
+  areas = (colisionArea*)malloc(2 * sizeof(colisionArea));
+
+  switch (n)
+  {
+  case 0:
+    areas[0].nPoints = 8;
+    areas[0].area = (esat::Vec3*)malloc(9 * sizeof(esat::Vec3));
+
+    areas[0].area[0] = {-0.20f,  -0.40f, 1.0f}; //0 0
+    areas[0].area[1] = { 0.00f,  -0.60f, 1.0f}; //1 1
+    areas[0].area[2] = { 0.20f,  -0.40f, 1.0f}; //2 2
+    areas[0].area[3] = { 0.40f,  -0.16f, 1.0f}; //5 3
+    areas[0].area[4] = { 0.52f,   0.00f, 1.0f}; //6 4
+    areas[0].area[5] = { 0.40f,   0.20f, 1.0f}; //7 5
+    areas[0].area[6] = { 0.00f,   0.20f, 1.0f}; //8 6
+    areas[0].area[7] = {-0.20f,   0.00f, 1.0f}; //9 7
+    areas[0].area[8] = {-0.20f,  -0.40f, 1.0f}; //0 8
+
+    areas[1].nPoints = 4;
+    areas[1].area = (esat::Vec3*)malloc(5 * sizeof(esat::Vec3));
+
+    areas[1].area[0] = { 0.20f,  -0.40f, 1.0f}; //2 0
+    areas[1].area[1] = { 0.40f,  -0.60f, 1.0f}; //3 1
+    areas[1].area[2] = { 0.60f,  -0.40f, 1.0f}; //4 2
+    areas[1].area[3] = { 0.40f,  -0.16f, 1.0f}; //5 3
+    areas[1].area[4] = { 0.20f,  -0.40f, 1.0f}; //2
+
+    break;
+          
+  }
+  return areas;
+}
+
 void ValuesAste(Asteroids **aste, int i){
   int random = rand()%4;
+
   switch (random){
   case 0: (*aste)[i].nPoints = 10; break;
   case 1: (*aste)[i].nPoints = 12; break;
   case 2: (*aste)[i].nPoints = 12; break;
   case 3: (*aste)[i].nPoints = 11; break;
   }
-  (*aste)[i].points = AsteroidShapes(random);
 
-  // no normalizo
+  (*aste)[i].points = AsteroidShapes(random);
+  (*aste)[i].areas = asteAreas(random);
+
   (*aste)[i].size = 40.0f; // size also functions as lives
   (*aste)[i].pos = {(float)(rand()%800), (float)(rand()%600)};   // random position 
 
@@ -133,22 +167,14 @@ void initAsteroids(Asteroids **aste, int amount){
 }
 
 int SplitAste(Asteroids **aste, int hitted){
-
-
-
-
-
-
-//////////////////////////////////////
-//      EL SIZE VA EN NEGATIVO      //
-//////////////////////////////////////
-
-
-
+  //////////////////////////////////////
+  //      EL SIZE VA EN NEGATIVO      //
+  //////////////////////////////////////
 
   // TO-DO AREGLAR LA SIZE EN NEGATIVO
   // MUY PROVABLEMENTE EL PROBLEMA ES ESTE IF
   // PORQUE SE TOCA EL SIZE
+  
   if((*aste)->size > 10.0f){    // if bigger than smallest size
     printf("\n[Aste split]\n");
     
