@@ -291,7 +291,7 @@ int esat::main(int argc, char** argv) {
   printf("[LOAD SCORELIST]\n");
   InitScoreList(&scoreList);
   printf("[AddAdmin]\n");
-  //AddAdmin();
+  AddAdmin();
   printf("---------[END INIT]--------\n");
 
 
@@ -316,7 +316,7 @@ int esat::main(int argc, char** argv) {
         InGame(&ship, &bullets, &asteroid, &enemy, &screenSelector, &menuPage);
       break;
       case 3: // admin
-        Admin(&option, &formSection);
+        Admin(&option, &formSection, &menuPage);
       break;
     }
 
@@ -347,8 +347,6 @@ int esat::main(int argc, char** argv) {
       current_time = esat::Time();
     } while((current_time - last_time) <= 1000.0 / fps);
   }
-
-  // TO-DO salvar los cambios de usiario
 
   esat::WindowDestroy();
   return 0;
