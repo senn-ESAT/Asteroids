@@ -35,6 +35,7 @@ void InsertBullet(Bullet **lista, mm::Vec2 pos, mm::Vec2 speed, int type){
   printf("[SUCCESSFULY ADDED A BULLET]\n");
 }
 
+//  delete bullet 2 seconds after being shot
 void ElimBullet(Bullet **lista){
   Bullet *aux;
   aux = *lista;
@@ -57,5 +58,21 @@ void ElimBullet(Bullet **lista){
       aux = nullptr; 
     }
   }
+  *lista = aux;
+}
+
+// delete bullets when they collide with an object
+void DellBulletOnHit(Bullet *TheOne, Bullet **lista){
+  Bullet *aux;
+  aux = *lista;
+  double time = esat::Time();
+  
+  Bullet *b;
+  for(b = *lista; b != nullptr; b = b->prox){
+    if(b->prox == TheOne->prox){
+      b->prox = TheOne->prox->prox;
+    }
+  }
+
   *lista = aux;
 }

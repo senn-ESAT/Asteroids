@@ -1,11 +1,12 @@
 struct UFO{
   mm::Vec2 pos, speed;
   esat::Vec3 *UFOPoints = nullptr;
+  colisionArea *areas;
   Bullet *enemyBullets = nullptr;
   float size;       // There are 4 sizes that also represent the health
   bool alive, type; // If the ufo is alive or not, what type of ufo is it
   double TimeDeath, newDirection, fireTime; // the time the the ufo has been killed
-  int rate = 7;     // At the first level the spawn rate will be 70% the easy UFO
+  int rate = 8, nAreas;     // At the first level the spawn rate will be 80% the dumb UFO
 };
 
 void initUFO(UFO *enemy){
@@ -53,6 +54,29 @@ void SpawnUFO(UFO *enemy){
     enemy->UFOPoints[9] = { 1.0f, -3.0f,  1.0f};
     enemy->UFOPoints[10]= { 2.0f, -1.0f,  1.0f};
     enemy->UFOPoints[11]= { 5.0f, 1.0f, 1.0f};
+
+    enemy->nAreas = 2;
+    enemy->areas = (colisionArea*)malloc(2 * sizeof(colisionArea));
+
+    enemy->areas[0].nPoints = 4; // cockpit
+    enemy->areas[0].area = (esat::Vec3*)malloc(5 * sizeof(esat::Vec3));
+
+    enemy->areas[0].area[0]= { -2.0f, -1.0f,   1.0f};  // 7  - 0
+    enemy->areas[0].area[1]= { -1.0f, -3.0f,   1.0f};  // 8  - 1
+    enemy->areas[0].area[2]= { 1.0f, -3.0f,  1.0f};    // 9  - 2
+    enemy->areas[0].area[3]= { 2.0f, -1.0f,  1.0f};    // 10 - 3
+    enemy->areas[0].area[4]= { -2.0f, -1.0f,   1.0f};  // 7  - 4
+
+    enemy->areas[1].nPoints = 6;  // body
+    enemy->areas[1].area = (esat::Vec3*)malloc(7 * sizeof(esat::Vec3));
+
+    enemy->areas[1].area[0] = { 2.0f, -1.0f,  1.0f};    // 0 - 0
+    enemy->areas[1].area[1] = { -2.0f, -1.0f,   1.0f};  // 1 - 1
+    enemy->areas[1].area[2] = { -5.0f, 1.0f,  1.0f};    // 2 - 2
+    enemy->areas[1].area[3] = { -2.0f, 3.0f,  1.0f};    // 5 - 3
+    enemy->areas[1].area[4] = { 2.0f, 3.0f, 1.0f};      // 4 - 4
+    enemy->areas[1].area[5] = { 5.0f, 1.0f, 1.0f};      // 3 - 5
+    enemy->areas[1].area[6] = { 2.0f, -1.0f,  1.0f};    // 0 - 6
   }
 }
 

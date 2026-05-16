@@ -26,9 +26,9 @@ int nAste = 0;
 #include "./enemies.cc"
 #include "./accounts.cc"
 #include "./ship.cc"
-#include "./colision.cc"
 #include "./scoreBoard.cc"
 #include "./menu.cc"
+#include "./colision.cc"
 
 esat::Mat3* DrawThings(Ship ship, Bullet *bullets, Asteroids *aste, UFO *enemy){
   printf("1");
@@ -77,6 +77,8 @@ esat::Mat3* DrawThings(Ship ship, Bullet *bullets, Asteroids *aste, UFO *enemy){
 
   esat::Mat3 *mat;
   mat = (esat::Mat3*)malloc(2*sizeof(esat::Mat3));
+  // mat[0] = asteroids
+  // mat[1] = ufo
 
   printf("3");
   for(int i = 0; i < nAste; i++){
@@ -253,7 +255,7 @@ void InGame(Ship *ship, Bullet **bullets, Asteroids **asteroid, UFO *enemy, int 
   CheckBorder(&*ship, &*bullets, &*asteroid, &enemy);
 
   printf(" COLISION -->");
-  CheckCollisions(&*ship, &*bullets, &*asteroid, &enemy, m);
+  PlayerBulletCollisions(&*bullets, &*asteroid, &enemy, m);
 
   printf(" MANAGER -->");
   GameManager(&*ship, &*screen, &*menu);

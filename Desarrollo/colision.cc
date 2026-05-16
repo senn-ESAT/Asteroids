@@ -1,6 +1,3 @@
-
-
-
 float crossCalculator(mm::Vec2 A, mm::Vec2 B){
   return (A.x * B.y) - (A.y * B.x);
 }
@@ -34,61 +31,89 @@ bool ChechProximity(mm::Vec2 pos1, mm::Vec2 pos2, float offset){
 }
 
 bool colisionDetector(esat::Vec2 point, esat::Mat3 matPoint, colisionArea *colsion, int nAreas){
-  printf("\nCOlision start: \n");
   int j = 0;
   while(j < nAreas){
-    printf("  Area start\n");
     
-    esat::Vec2 *areaPoints = nullptr;
-    areaPoints = (esat::Vec2*)malloc(colsion[j].nPoints * sizeof(esat::Vec2));
-    for (int i = 0; i < colsion[j].nPoints; ++i) {
-      esat::Vec3 tmp = esat::Mat3TransformVec3(matPoint, colsion[j].area[i]);
+    int nPoints = colsion[j].nPoints;
+    esat::Vec2 *areaPoints = (esat::Vec2*)malloc(nPoints * sizeof(esat::Vec2));
+    for (int i = 0; i < nPoints; ++i) {
+      esat::Vec3 tmp = esat::Mat3TransformVec3(matPoint, colsion[j].area[i]);    
       areaPoints[i] = {tmp.x, tmp.y};
     }
-    printf("    Pre while");
+
+    esat::DrawSetFillColor(rand()%255,rand()%255,rand()%255);
+    esat::DrawSolidPath(&areaPoints[0].x, nPoints);
     
     int i = 0;
     bool stillSame = true;
-    float previusCross = 0.0f;
+    float previousCross = 0.0f;
     printf("\n");
-    while(stillSame && i < colsion[j].nPoints){
+    while(stillSame && i < nPoints){
+      mm::Vec2 A = {areaPoints[i].x, areaPoints[i].y};
+      mm::Vec2 B = {areaPoints[(i + 1) % nPoints].x, areaPoints[(i + 1) % nPoints].y};
+      mm::Vec2 p = {point.x, point.y};
 
-      mm::Vec2 A = {areaPoints[i].x,areaPoints[i].y};       // 0 -> 1 -> 2 etc...
-      mm::Vec2 B = {areaPoints[i+1].x, areaPoints[i+1].y};  // 1 -> 2 -> 3 etc...
-      mm::Vec2 p = {point.x, point.y};      // p
-
-      printf("  CROSS");
       float newCross = PointInTriangle(p, A, B);
 
       if(i != 0){
-        if((newCross < 0 && previusCross < 0) || (newCross > 0 && previusCross > 0)){
+        if((newCross < 0 && previousCross < 0) || (newCross > 0 && previousCross > 0)){
           stillSame = true;
         }else{
           stillSame = false;
         }
       }
-      previusCross = newCross;
+      previousCross = newCross;
       i++;
     }
-      
+    
+    free(areaPoints);
     if(stillSame){
-      printf("  YES COLISION DETECTED WOWOWOWOWOOWOW");
       return true;
     }
-      printf("  FREE AND RESTART");
 
     j++;
-    free(areaPoints);
-
   }
   return false;
 }
 
-void CheckCollisions(Ship *ship, Bullet **bullets, Asteroids **aste, UFO **enemy, esat::Mat3 *mat){
+void PlayerBulletCollisions(Bullet **bullets, Asteroids **aste, UFO **enemy, esat::Mat3 *mat){
+  if(BulletAmount((*bullets))){ // if there are bullets
+    Bullet *b;
+    for(b = *bullets; b != nullptr; b = b->prox){ // loop every bullet
+      printf("Bucle bullets: [%f]\n", b->p1.x);
 
-  // if(ship->noHit + 2000 < esat::Time()){
+      ////////////// ASTYEROIDS COLLISIONS /////////////////
+      for(int i = 0; i < nAste; i++){   // loop every asteroid
+        printf(" Bucle ASTE->");
+        if(ChechProximity((*aste)[i].pos, b->p1, (*aste)[i].size)){ // if they are close enough to colision
+          esat::Vec2 p = {b->p1.x, b->p1.y};
+          if(colisionDetector(p, mat[0], (*aste)[i].areas, (*aste)[i].nAreas)){ // if they are actually colisioning
 
-  // }
+            SplitAste(&(*aste), i);
+            DellBulletOnHit(b, &*bullets);
+          }
+        }
+      }
+
+      ////////////// UFO COLLISIONS /////////////////
+      if((*enemy)->alive){
+        if(ChechProximity((*enemy)->pos, b->p1, (*enemy)->size)){ // if they are close enough to colision
+          esat::Vec2 p = {b->p1.x, b->p1.y};  // change from mm to esat
+
+          if(colisionDetector(p, mat[1], (*enemy)->areas, (*enemy)->nAreas)){
+            (*enemy)->alive = false;
+            // delete bullet
+          }
+        }
+      }
+    }
+  }
+
+  // UFO COLLISIONS
+}
+
+void EnemyBulletCollisions(Bullet **bullets, Asteroids **aste, Ship *player, esat::Mat3 *mat){
+
   printf("\n\n INICIO ");
   if(BulletAmount((*bullets))){
     Bullet *b;
@@ -105,9 +130,16 @@ void CheckCollisions(Ship *ship, Bullet **bullets, Asteroids **aste, UFO **enemy
             printf("[COLISION]");
 
             SplitAste(&(*aste), i);
+            // delete bullet
           }
         }
       }
+      // if(ChechProximity(player->pos)){
+
+      // }
     }
   }
+
+
+  // UFO COLLISIONS
 }
