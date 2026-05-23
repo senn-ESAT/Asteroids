@@ -20,7 +20,6 @@ int BulletAmount(Bullet *lista){
 }
 
 void InsertBullet(Bullet **lista, mm::Vec2 pos, mm::Vec2 speed, int type){
-  printf("\n[ADDING A BULLET]\n");
   Bullet *temp = nullptr;
   temp = (Bullet*)malloc(1 * sizeof(Bullet));
 
@@ -32,7 +31,6 @@ void InsertBullet(Bullet **lista, mm::Vec2 pos, mm::Vec2 speed, int type){
   temp->timeFire = esat::Time();
 
   (*lista) = temp;
-  printf("[SUCCESSFULY ADDED A BULLET]\n");
 }
 
 //  delete bullet 2 seconds after being shot
@@ -41,20 +39,16 @@ void ElimBullet(Bullet **lista){
   aux = *lista;
   double time = esat::Time();
   
-  printf(" BULLET AMOUNT: %d", BulletAmount(*lista));
   if(BulletAmount(*lista) > 1){
-    printf(" - %d", BulletAmount(*lista));
     
     Bullet *b;
     for(b = *lista; b != nullptr; b = b->prox){
-      printf("[%f]", (b->timeFire + 2000) - time);
       if(b->timeFire + 2000 - time < 0){    // no elimina rapido y van a - 100 
         b->prox = nullptr;
       }
     }
   }else{
     if(aux->timeFire + 2000 < time){
-      printf("[%f]", (aux->timeFire + 2000) - time);
       aux = nullptr; 
     }
   }
@@ -63,16 +57,20 @@ void ElimBullet(Bullet **lista){
 
 // delete bullets when they collide with an object
 void DellBulletOnHit(Bullet *TheOne, Bullet **lista){
-  Bullet *aux;
-  aux = *lista;
-  double time = esat::Time();
-  
-  Bullet *b;
-  for(b = *lista; b != nullptr; b = b->prox){
-    if(b->prox == TheOne->prox){
-      b->prox = TheOne->prox->prox;
+  // If the one that collided is the first one
+  if(*lista == TheOne){
+    Bullet *temp = *lista;
+    *lista = (*lista)->prox;
+    free(temp); // freing up the memory in the first  position
+  }else{  // search for the bullet inside the list
+    Bullet *b;
+    bool continueIterate = true;
+    for(b = *lista; b != nullptr && continueIterate; b = b->prox){
+      if(b->prox == TheOne){  // it compare in position next
+        b->prox = TheOne->prox; // we skip the bullet
+        free(TheOne);   // delete the bullet
+        continueIterate = false;
+      }
     }
   }
-
-  *lista = aux;
 }

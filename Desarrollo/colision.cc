@@ -20,10 +20,8 @@ float PointInTriangle(mm::Vec2 p, mm::Vec2 a, mm::Vec2 b){
 }
 
 bool ChechProximity(mm::Vec2 pos1, mm::Vec2 pos2, float offset){
-  printf(" PROXIMITY ");
   mm::Vec2 p2 = mm::subVec2(pos1, pos2);
 
-  printf(" CHeckProximity ");
   if((p2.x < offset && p2.x > - offset) && (p2.y < offset && p2.y > - offset)){ // Are they in the same space
     return true;
   }
@@ -40,9 +38,6 @@ bool colisionDetector(esat::Vec2 point, esat::Mat3 matPoint, colisionArea *colsi
       esat::Vec3 tmp = esat::Mat3TransformVec3(matPoint, colsion[j].area[i]);    
       areaPoints[i] = {tmp.x, tmp.y};
     }
-
-    esat::DrawSetFillColor(rand()%255,rand()%255,rand()%255);
-    esat::DrawSolidPath(&areaPoints[0].x, nPoints);
     
     int i = 0;
     bool stillSame = true;
@@ -76,70 +71,175 @@ bool colisionDetector(esat::Vec2 point, esat::Mat3 matPoint, colisionArea *colsi
   return false;
 }
 
-void PlayerBulletCollisions(Bullet **bullets, Asteroids **aste, UFO **enemy, esat::Mat3 *mat){
+void PlayerBulletCollisions(Bullet **bullets, Asteroids **aste, UFO **enemy, int *points){
   if(BulletAmount((*bullets))){ // if there are bullets
     Bullet *b;
-    for(b = *bullets; b != nullptr; b = b->prox){ // loop every bullet
-      printf("Bucle bullets: [%f]\n", b->p1.x);
+    bool isBcompromized = false;
+    // i use the b to navigate so if i delete a bullet it mess up the search and crashes so isBcompromized enter the scene to save the day
+
+    for(b = *bullets; !isBcompromized && b != nullptr; b = b->prox){ // loop every bullet
 
       ////////////// ASTYEROIDS COLLISIONS /////////////////
       for(int i = 0; i < nAste; i++){   // loop every asteroid
-        printf(" Bucle ASTE->");
         if(ChechProximity((*aste)[i].pos, b->p1, (*aste)[i].size)){ // if they are close enough to colision
           esat::Vec2 p = {b->p1.x, b->p1.y};
-          if(colisionDetector(p, mat[0], (*aste)[i].areas, (*aste)[i].nAreas)){ // if they are actually colisioning
+          esat::Mat3 matAs = MatAsteroid((*aste)[i].pos, (*aste)[i].size);
+          if(colisionDetector(p, matAs, (*aste)[i].areas, (*aste)[i].nAreas)){ // if they are actually colisioning
+            isBcompromized = true;
+            int lasone = SplitAste(&(*aste), i);
+            if(lasone){
+              lvl++;
+              initAsteroids(&(*aste), 5+lvl);
+            }
+            DellBulletOnHit(b, &*bullets);
+            if((*aste)[i].size > 30){
+              *points += 20;
+            }else if((*aste)[i].size > 20){
+              *points += 50;
+            }else{
+              *points += 100;
+            }
+          }
+        }
+      }
+      ////////////// UFO COLLISIONS /////////////////
+      if((*enemy)->alive){
+        if(ChechProximity((*enemy)->pos, b->p1, (*enemy)->size * 3)){ // if they are close enough to colision
+          esat::Vec2 p = {b->p1.x, b->p1.y};  // change from mm to esat
+  
+          esat::Mat3 matUf = MatAsteroid((*enemy)->pos, (*enemy)->size);
+          if(colisionDetector(p, matUf, (*enemy)->areas, (*enemy)->nAreas)){
+            (*enemy)->alive = false;
+            (*enemy)->TimeDeath = esat::Time();
+            DellBulletOnHit(b, &*bullets);
+            if((*enemy)->size > 3){
+              *points += 200;
+            }else{
+              *points += 1000;
+            }
+            isBcompromized = true;
+          }
+        }
+      }
+    }
+  }  
+}
 
-            SplitAste(&(*aste), i);
+bool IsInsidePlayer(Ship *ship, mm::Vec2 pointPos){
+  esat::Vec2 ShipPos = {ship->pos.x, ship->pos.y};
+
+    bool stillInside = true;
+    float previusCross; // guarda el resultado de crossproduct del bucle precedente
+    
+    int nPoints = 3, i = 0;
+    while(stillInside && i < nPoints * 2){
+                      // x                  // y
+      mm::Vec2 A = {ship->puntosNave[i], ship->puntosNave[i + 1]};     // 0 -> 1 -> 2 etc...
+      mm::Vec2 B = {ship->puntosNave[i + 2], ship->puntosNave[i + 3]}; // 1 -> 2 -> 3 etc...
+      mm::Vec2 p = {pointPos.x, pointPos.y};               // p
+      float newCross = PointInTriangle(p, A, B);
+
+      if(i != 0){
+        if((newCross < 0 && previusCross < 0) || (newCross > 0 && previusCross > 0)){
+          stillInside = true;
+        }else{
+          stillInside = false;
+        }
+      }
+      previusCross = newCross;
+      i+=2;
+    }
+
+    if(stillInside){
+      return true;
+    }
+    return false;
+  }
+  
+void EnemyBulletCollisions(Bullet **bullets, Asteroids **aste, Ship **player){
+  
+  if(BulletAmount((*bullets))){
+    Bullet *b;
+    bool isBcompromized = false;
+    for(b = *bullets; !isBcompromized && b != nullptr; b = b->prox){
+      
+      // PLAYER COLISION
+      //if player dead or invulnerable then skip
+      if((*player)->deathTime+1000 < esat::Time() && (*player)->noHit + 2000 < esat::Time()){
+        // if close then check solison
+        if(ChechProximity((*player)->pos, b->p1, 50)){
+          if(IsInsidePlayer(*player, b->p1)){
+            DellBulletOnHit(b, &*bullets);
+            (*player)->health--;
+            (*player)->dying = true;
+            (*player)->deathTime = esat::Time();
+            isBcompromized = true;
+          }
+        }
+      }
+      
+      for(int i = 0; i < nAste; i++){   // loop every asteroid
+        if(ChechProximity((*aste)[i].pos, b->p1, (*aste)[i].size)){ // if they are close enough to colision
+          esat::Vec2 p = {b->p1.x, b->p1.y};
+          esat::Mat3 matAs = MatAsteroid((*aste)[i].pos, (*aste)[i].size);
+          if(colisionDetector(p, matAs, (*aste)[i].areas, (*aste)[i].nAreas)){ // if they are actually colisioning
+            isBcompromized = true;
+            int lasone = SplitAste(&(*aste), i);
+            if(lasone){
+              lvl++;
+              initAsteroids(&(*aste), 5+lvl);
+            }
             DellBulletOnHit(b, &*bullets);
           }
         }
       }
-
-      ////////////// UFO COLLISIONS /////////////////
-      if((*enemy)->alive){
-        if(ChechProximity((*enemy)->pos, b->p1, (*enemy)->size)){ // if they are close enough to colision
-          esat::Vec2 p = {b->p1.x, b->p1.y};  // change from mm to esat
-
-          if(colisionDetector(p, mat[1], (*enemy)->areas, (*enemy)->nAreas)){
-            (*enemy)->alive = false;
-            // delete bullet
-          }
-        }
-      }
     }
   }
-
-  // UFO COLLISIONS
 }
 
-void EnemyBulletCollisions(Bullet **bullets, Asteroids **aste, Ship *player, esat::Mat3 *mat){
+void BodyCollisionWithPlayer(Asteroids **aste, UFO **enemy, Ship **player){
+  // is player unkillable
+  if((*player)->deathTime+1000 < esat::Time() && (*player)->noHit + 2000 < esat::Time()){
+    ////////////// ASTYEROIDS COLLISIONS /////////////////
+    for(int i = 0; i < nAste && !((*player)->dying); i++){   // loop every asteroid
+      if(ChechProximity((*aste)[i].pos, (*player)->pos, (*aste)[i].size)){ // if they are close enough to colision
+        esat::Mat3 mat = MatAsteroid((*aste)[i].pos, (*aste)[i].size);
 
-  printf("\n\n INICIO ");
-  if(BulletAmount((*bullets))){
-    Bullet *b;
-    for(b = *bullets; b != nullptr; b = b->prox){
-      printf("Bucle bullets: [%f]\n", b->p1.x);
-      for(int i = 0; i < nAste; i++){
-        printf(" Bucle ASTE->");
-        if(ChechProximity((*aste)[i].pos, b->p1, (*aste)[i].size)){
-        
-          printf("--------------[FoundProximity]-------------------");
+        for(int j = 0; j < ((*aste)[i].nPoints) && !((*player)->dying); j++){     
 
-          esat::Vec2 p = {b->p1.x, b->p1.y};
-          if(colisionDetector(p, mat[0], (*aste)[i].areas, (*aste)[i].nAreas)){
-            printf("[COLISION]");
+          esat::Vec2 p = {(*aste)[i].points[j].x, (*aste)[i].points[j].y};
+          esat::Vec2 tmp = esat::Mat3TransformVec2(mat, p);    
 
-            SplitAste(&(*aste), i);
-            // delete bullet
+          mm::Vec2 pnt = {tmp.x, tmp.y};
+
+          if(IsInsidePlayer(*player, pnt)){
+            (*player)->health--;
+            (*player)->dying = true;
+            (*player)->deathTime = esat::Time();
           }
         }
       }
-      // if(ChechProximity(player->pos)){
+    }
 
-      // }
+      //////////// UFO COLLISIONS /////////////////
+    if((*enemy)->alive){
+      if(ChechProximity((*enemy)->pos, (*player)->pos, 20)){ // if they are close enough to colision
+        esat::Mat3 mat = MatAsteroid((*enemy)->pos, (*enemy)->size);
+
+        for(int j = 0; j < 12 && !((*player)->dying); j++){     
+
+          esat::Vec2 p = {(*enemy)->UFOPoints[j].x, (*enemy)->UFOPoints[j].y};
+          esat::Vec2 tmp = esat::Mat3TransformVec2(mat, p);    
+
+          mm::Vec2 pnt = {tmp.x, tmp.y};
+
+          if(IsInsidePlayer(*player, pnt)){
+            (*player)->health--;
+            (*player)->dying = true;
+            (*player)->deathTime = esat::Time();
+          }
+        }
+      }
     }
   }
-
-
-  // UFO COLLISIONS
 }

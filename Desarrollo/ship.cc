@@ -3,7 +3,7 @@ struct Ship{
   mm::Vec2 speed;
   float angulo = 0.0f;
   float *puntosNave;
-  int health = 3, healthGained = 1, score;
+  int health = 3, healthGained = 1, score = 0;
   double deathTime = 0.0f, noHit = 0.0f;
   bool dying = false;
 };

@@ -17,7 +17,7 @@
 const unsigned int ScreenX = 800;
 const unsigned int ScreenY = 600;
 const float max_speed = 7.0f; // no need for this as a global
-int nAste = 0;
+int nAste = 0, lvl = 1;
 
 ////////PAGES////////
 #include "./MathLib.h"
@@ -30,12 +30,10 @@ int nAste = 0;
 #include "./menu.cc"
 #include "./colision.cc"
 
-esat::Mat3* DrawThings(Ship ship, Bullet *bullets, Asteroids *aste, UFO *enemy){
-  printf("1");
+void DrawThings(Ship ship, Bullet *bullets, Asteroids *aste, UFO *enemy){
   esat::DrawSetStrokeColor(255, 255, 255);
   if(ship.deathTime+1000 < esat::Time()){
     if(ship.noHit + 2000 > esat::Time()){
-      printf("\n\nNOHITTIME: %f", ship.noHit);
   
       if((int)(((ship.noHit + 2000) - esat::Time()) / 100)%2 == 0){
         esat::DrawPath(ship.puntosNave, 4);
@@ -47,15 +45,13 @@ esat::Mat3* DrawThings(Ship ship, Bullet *bullets, Asteroids *aste, UFO *enemy){
 
   // LIVES
   mm::Vec2 pos = {50, 50};
-  float *health, angle = 180.0f;
-  printf("\n\n\n\n HEALTH: %d \n\n\n\n", ship.health);
+  float *health, angle = 2 * 1.57f;
   for(int i = 0; i < ship.health; i++){
     health = ShipShape(angle, -161.0f + angle, 161.0f + angle, pos);
     esat::DrawPath(health, 4);
     pos.x += 30.0f;
   }
   
-  printf("2");
   if(bullets != nullptr){
     float *puntosDisparo;
     puntosDisparo = (float*)malloc(10*sizeof(float));
@@ -75,28 +71,16 @@ esat::Mat3* DrawThings(Ship ship, Bullet *bullets, Asteroids *aste, UFO *enemy){
     }
   }
 
-  esat::Mat3 *mat;
-  mat = (esat::Mat3*)malloc(2*sizeof(esat::Mat3));
-  // mat[0] = asteroids
-  // mat[1] = ufo
-
-  printf("3");
   for(int i = 0; i < nAste; i++){
-    mat[0] = MatAsteroid(aste[i].pos, aste[i].size);
-    if(aste[i].size > 50){
-      printf("\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n");
-    }
+    esat::Mat3 mat = MatAsteroid(aste[i].pos, aste[i].size);
 
-    DrawAsteroid(mat[0], aste[i].points, aste[i].nPoints);
+    DrawAsteroid(mat, aste[i].points, aste[i].nPoints);
   }
 
   if(enemy->alive){
-    printf("4");
-    mat[1] = MatAsteroid(enemy->pos, enemy->size);
-    DrawAsteroid(mat[1], enemy->UFOPoints, 12);
-    printf(" BULLETS: %d ", BulletAmount(enemy->enemyBullets));
+    esat::Mat3 mat = MatAsteroid(enemy->pos, enemy->size);
+    DrawAsteroid(mat, enemy->UFOPoints, 12);
     if(BulletAmount(enemy->enemyBullets) != 0){
-      printf("5");
       float *puntosDisparo;
       puntosDisparo = (float*)malloc(10*sizeof(float));
       Bullet *b;
@@ -116,8 +100,6 @@ esat::Mat3* DrawThings(Ship ship, Bullet *bullets, Asteroids *aste, UFO *enemy){
     }
   }
 
-  printf("DRAW END ");
-  return mat;
 }
 
 void Move(Ship *ship, Bullet **bullets, Asteroids **aste, UFO *enemy){
@@ -213,10 +195,40 @@ void CheckBorder(Ship *ship, Bullet **bullets, Asteroids **aste, UFO **enemy){
   }
 }
 
-void GameManager(Ship *ship, int *screen, int *menu){
+void CalculoScorePlayer(Ship *ship, ScoreBoard **scoreList, char *nick){
+  bool newScore = false;
+  for (int i = 0; i < 10 && !newScore; i++) {
+    if (ship->score > (*scoreList)[i].score) {
+      // reduce la posicion de 1 por cada inferior
+      for (int j = 9; j > i; j--) {
+          (*scoreList)[j].score = (*scoreList)[j - 1].score;
+          strcpy((*scoreList)[j].name, (*scoreList)[j - 1].name);
+      }
+      // Mete un nuevo 
+      (*scoreList)[i].score = ship->score;
+      strcpy((*scoreList)[i].name, nick);
+
+      newScore = true;
+    }
+  }
+
+  if(newScore){
+    FILE *f;
+    f = fopen("HS.dat", "wb");  // with wb is like a blank new file
+    for(int i = 0; i < 10; i++){
+      fwrite(&(*scoreList)[i].score, sizeof((*scoreList)[i].score), 1, f);
+      writeString(&f, (*scoreList)[i].name, 4);
+    }
+  }
+}
+
+void GameManager(Ship *ship, int *screen, int *menu, ScoreBoard **scoreList, Account **user){
   // 10k vida ++
   if(ship->health < 1){
     // check hs, screen 1
+
+    CalculoScorePlayer(ship, &(*scoreList), (*user)->nick);
+    (*user)->credit += 5;    // bonus por highScore
     *screen = 1;
     *menu = 1;
   }
@@ -233,42 +245,51 @@ void GameManager(Ship *ship, int *screen, int *menu){
   }
 }
 
-void InGame(Ship *ship, Bullet **bullets, Asteroids **asteroid, UFO *enemy, int *screen, int *menu){
+void InGame(Ship *ship, Bullet **bullets, Asteroids **asteroid, UFO *enemy, int *screen, int *menu, ScoreBoard **scoreList, Account *user){
+  // UPDATE
   printf("\n\n[initShip -->");
   initShip(&(*ship));
   SpawnUFO(&(*enemy));
   
-  printf(" DRAW -->");
-  esat::Mat3 *m = DrawThings(*ship, *bullets, *asteroid, enemy);
-
+  
   printf(" CONTROLS -->");
   Controls(&*ship, &*bullets);
+
   if(enemy->alive){
     printf(" UFO --> ");
     ManageUFO(&(*enemy), ship->pos);
+    
+    printf(" UFO BULLETS--> ");
+    EnemyBulletCollisions(&(*enemy).enemyBullets, &*asteroid, &ship);
   }
-
-  printf(" MOVE -->");
-  Move(&*ship, &*bullets, &*asteroid, &*enemy);
-
+  
   printf(" BORDERS -->");
   CheckBorder(&*ship, &*bullets, &*asteroid, &enemy);
-
+  
   printf(" COLISION -->");
-  PlayerBulletCollisions(&*bullets, &*asteroid, &enemy, m);
-
-  printf(" MANAGER -->");
-  GameManager(&*ship, &*screen, &*menu);
-    
+  PlayerBulletCollisions(&*bullets, &*asteroid, &enemy, &ship->score);
+  BodyCollisionWithPlayer(&*asteroid, &enemy, &ship);
+  
+  // MOVE
+  printf(" MOVE -->");
+  Move(&*ship, &*bullets, &*asteroid, &*enemy);
+  
   // friction
   ship->speed = mm::scaleV2(ship->speed, 0.995f);
   printf(" end]");
+  
+  // DRAW
+  printf(" DRAW -->");
+  DrawThings(*ship, *bullets, *asteroid, enemy);
+
+  printf(" MANAGER -->");
+  GameManager(&*ship, &*screen, &*menu, &(*scoreList), &user);
 }
 
 int esat::main(int argc, char** argv) {
   //////////////LOGIC/////////////
   double current_time = 0.0, last_time = 0.0, fps = 60.0;
-  int screenSelector = 0, option = 0, formSection = 0, lvl = 1, menuPage = 0;   // 0 login/registrar 1 menu de juego 2 juego
+  int screenSelector = 0, option = 0, formSection = 0, menuPage = 0;   // 0 login/registrar 1 menu de juego 2 juego
   ////////SOLO 1 DE ESTOS/////////
   Ship ship = {{ScreenX/2.0f, ScreenY/2.0f}, {0.0f, 0.0f}};
   UFO enemy;
@@ -296,7 +317,6 @@ int esat::main(int argc, char** argv) {
   AddAdmin();
   printf("---------[END INIT]--------\n");
 
-
   esat::DrawSetTextFont("./assets/Hyperspace-JvEM.ttf");
   esat::DrawSetTextSize(30);
 
@@ -308,41 +328,21 @@ int esat::main(int argc, char** argv) {
     switch(screenSelector){
       case 0: // account manager
         Usersmanagement(&screenSelector, &option, &formSection, &user);
-      break;
-      case 1: //game menu
-        Scores(ship.score /*HS as well*/);
+        break;
+        case 1: //game menu
+        Scores(ship.score, scoreList[0].score);
         Menu(&menuPage, &user, &option, &screenSelector, &ship, scoreList);
-      break;
-      case 2: // game screen
-        Scores(ship.score /*HS as well*/);
-        InGame(&ship, &bullets, &asteroid, &enemy, &screenSelector, &menuPage);
+        break;
+        case 2: // game screen
+        Scores(ship.score, scoreList[0].score);
+        InGame(&ship, &bullets, &asteroid, &enemy, &screenSelector, &menuPage, &scoreList, &user);
       break;
       case 3: // admin
-        Admin(&option, &formSection, &menuPage);
+        // el puto crashea
+        //Admin(&option, &formSection, &menuPage);
       break;
     }
-
-    if(esat::IsSpecialKeyDown(esat::kSpecialKey_Keypad_0)){
-      screenSelector = 0;
-    }else if(esat::IsSpecialKeyDown(esat::kSpecialKey_Keypad_1)){
-      screenSelector = 1;
-    }else if(esat::IsSpecialKeyDown(esat::kSpecialKey_Keypad_2)){
-      screenSelector = 2;
-    }else if(esat::IsSpecialKeyDown(esat::kSpecialKey_Keypad_3)){
-      screenSelector = 3;
-    }else if(esat::IsSpecialKeyDown(esat::kSpecialKey_Keypad_7)){
-      ship.score += 1000; 
-    }else if(esat::IsSpecialKeyDown(esat::kSpecialKey_Keypad_8)){
-      ship.health--;
-      ship.deathTime = esat::Time();
-    }else if(esat::IsSpecialKeyDown(esat::kSpecialKey_Keypad_9)){
-      int lasone = SplitAste(&asteroid, rand()%nAste);
-      if(lasone){
-        lvl++;
-        initAsteroids(&asteroid, 5+lvl);
-      }
-    }
-    
+   
     esat::DrawEnd();
     esat::WindowFrame();
     do {
@@ -350,6 +350,9 @@ int esat::main(int argc, char** argv) {
     } while((current_time - last_time) <= 1000.0 / fps);
   }
 
+  free(scoreList);
+  free(asteroid);
+  free(bullets);
   esat::WindowDestroy();
   return 0;
 }
