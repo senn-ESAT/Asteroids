@@ -15,7 +15,6 @@ struct Account{
 bool error = false;
 Account tempUser;
 
-
 void InitAccount(Account *user){
   user->name =    nullptr;
   user->surname = nullptr;
@@ -154,8 +153,8 @@ void AddAdmin(){
     temp.nation =  (char*)malloc(17*sizeof(char));
 
     printf("1");
-    temp.mail = "admin\0";
-    temp.psw = "a123456\0";
+    temp.mail = "ADMIN\0";
+    temp.psw = "A123456\0";
     temp.credit = 0;
     temp.personalHS = 0;
     temp.admin = true;
@@ -185,11 +184,12 @@ void AddAdmin(){
     writeString(&f1, temp.nick, 17);
     writeString(&f1, temp.psw, 17);
     fclose(f1);
+  } else {
+    fclose(f1);
   }
 }
 
 int CheckValidity(Account **users, bool option){
-  printf("\n------[STARTING VERIFICATION]------\n");
   FILE *f1;
   
   // esta verifica sirve para ambos casos
@@ -210,7 +210,6 @@ int CheckValidity(Account **users, bool option){
   
   // LOGIN
   if(option == 1){
-    printf("[LOG IN]\n");
 
     f1 = fopen("accounts.dat", "rb");
     if(f1 != NULL){
@@ -227,7 +226,6 @@ int CheckValidity(Account **users, bool option){
             readString(f1, temp.nick, 17) &&
             readString(f1, temp.psw, 17)){
         if(strcmp((*users)->mail, temp.mail) == 0 && strcmp((*users)->psw, temp.psw) == 0){
-          printf("[SUCCESS]\n");
           *(*users) = temp;
           fclose(f1);
           freeTemp(&temp);
@@ -237,7 +235,7 @@ int CheckValidity(Account **users, bool option){
     }
     // no file no accounts
     // or while ended so no match
-    printf("[FOUND NOT]\n");
+    fclose(f1);
     freeTemp(&temp);
     return 1;
   }// REGISTER
@@ -491,7 +489,7 @@ void LogIn(int *form, Account *user, int *screen){
       if(esat::IsSpecialKeyDown(esat::kSpecialKey_Enter)){
         // if outcome = 1 both mail and password are correct and present in the file
         if(!CheckValidity(&user, 1)){
-          if(strcmp(user->mail, "admin\0") == 0 || strcmp(user->psw, "a123456\0") == 0){
+          if(strcmp(user->mail, "ADMIN\0") == 0){
             *screen = 3;
           }else{
             *screen = 1;
@@ -563,208 +561,228 @@ void Usersmanagement(int *screen, int *option, int *form, Account *user){
 //            ADMIN             //
 //////////////////////////////////
 
-void tempUserInit(){
-  if(!tempUser.credit == NULL){
-    tempUser.name =    (char*)malloc(4*sizeof(char));
-    tempUser.surname = (char*)malloc(17*sizeof(char));
-    tempUser.nick =    (char*)malloc(17*sizeof(char));
-    tempUser.mail =    (char*)malloc(17*sizeof(char));
-    tempUser.psw =     (char*)malloc(17*sizeof(char));
-    tempUser.birth =   (char*)malloc(17*sizeof(char));
-    tempUser.province= (char*)malloc(17*sizeof(char));
-    tempUser.nation =  (char*)malloc(17*sizeof(char));
-  }
-}
-
-void editUsers(int nUser, int *form){
+void editUsers(int nUser, int *form, int *page){
+  esat::DrawSetFillColor(255,255,255);
   FILE *f;
-  f = fopen("accounrs.dat", "rb+");
-  printf("Fseek --> ");
-  if(0 == fseek(f, nUser*(sizeof(int)*2 + sizeof(bool) + sizeof(char)*123/*4+17*7*/), SEEK_SET)){
-    printf("SEEK correcto");
+  f = fopen("accounts.dat", "rb+");
+  if(f == NULL){
+    printf("NO FUNSICA");
   }else{
-    printf("SEEK incorrecto");
-  }
 
-  printf("USERINIT --> ");
-  tempUserInit();
+    fseek(f, nUser*(sizeof(int)*2 + sizeof(bool) + sizeof(char)*115/*4+17*6+9*/), SEEK_SET);
+    
+    printf("Read --> ");
+    if(tempUser.name[0] == '\0'){ //read only once
+      fread(&tempUser.credit, sizeof(int), 1, f);
+      fread(&tempUser.personalHS, sizeof(int), 1, f);
+      fread(&tempUser.admin, sizeof(bool), 1, f);
+      readString(f, tempUser.name, 4);
+      readString(f, tempUser.surname, 17);
+      readString(f, tempUser.mail, 17);
+      readString(f, tempUser.birth, 9);
+      readString(f, tempUser.province, 17);
+      readString(f, tempUser.nation, 17);
+      readString(f, tempUser.nick, 17);
+      readString(f, tempUser.psw, 17);
+    }
+    
+    if(esat::IsSpecialKeyDown(esat::kSpecialKey_Down) && *form < 8){
+      *form += 1;
+    }else if(esat::IsSpecialKeyDown(esat::kSpecialKey_Up) && *form > 0){
+      *form -= 1;
+    }
 
-  printf("Read --> ");
-  if(tempUser.name[0] == '\0'){ //read only once
-    fread(&tempUser.credit, sizeof(int), 1, f);
-    fread(&tempUser.personalHS, sizeof(int), 1, f);
-    fread(&tempUser.admin, sizeof(bool), 1, f);
-    readString(f, tempUser.name, 4);
-    readString(f, tempUser.surname, 17);
-    readString(f, tempUser.mail, 17);
-    readString(f, tempUser.birth, 9);
-    readString(f, tempUser.province, 17);
-    readString(f, tempUser.nation, 17);
-    readString(f, tempUser.nick, 17);
-    readString(f, tempUser.psw, 17);
-  }
-  printf("FORM inout --> ");
-  
-  if(esat::IsSpecialKeyDown(esat::kSpecialKey_Down) && *form < 8){
-    *form += 1;
-  }else if(esat::IsSpecialKeyDown(esat::kSpecialKey_Up) && *form > 0){
-    *form -= 1;
-  }
+    float *formSquare, *arrow;
+    // Indication arrow
+    arrow = ArrowShape((*form));
+    // the square of both form section and buttons
+    formSquare = (float*)malloc(10*sizeof(float));
+    formSquare[0] = ScreenX/2;  // x p1
+    formSquare[1] = 120;        // y p1
+    // i reuse the same shape and this help me change the shape and position
+    UpdateFormSection(&(*formSquare), 300);
 
-  printf("Draw START --> ");
-  float *formSquare, *arrow;
-  // Indication arrow
-  arrow = ArrowShape((*form));
-  // the square of both form section and buttons
-  formSquare = (float*)malloc(10*sizeof(float));
-  formSquare[0] = ScreenX/2;  // x p1
-  formSquare[1] = 120;        // y p1
-  // i reuse the same shape and this help me change the shape and position
-  UpdateFormSection(&(*formSquare), 300);
+    esat::DrawText(50, 150, "NAME:");
+    esat::DrawText(formSquare[6] + 10, formSquare[7] - 5, tempUser.name);
+    esat::DrawPath(formSquare, 5);
+    
+    esat::DrawText(50, 200, "SURNAME:");
+    formSquare[1] += 50;
+    UpdateFormSection(&(*formSquare), 300);
+    esat::DrawText(formSquare[6] + 10, formSquare[7] - 5, tempUser.surname);
+    esat::DrawPath(formSquare, 5);
 
-  esat::DrawText(50, 150, "NAME:");
-  printf("StringShow --> ");
-  esat::DrawText(formSquare[6] + 10, formSquare[7] - 5, tempUser.name);
-  esat::DrawPath(formSquare, 5);
-  
-  esat::DrawText(50, 200, "SURNAME:");
-  formSquare[1] += 50;
-  UpdateFormSection(&(*formSquare), 300);
-  esat::DrawText(formSquare[6] + 10, formSquare[7] - 5, tempUser.surname);
-  esat::DrawPath(formSquare, 5);
+    esat::DrawText(50, 250, "NICKNAME:");
+    formSquare[1] += 50;
+    UpdateFormSection(&(*formSquare), 300);
+    esat::DrawText(formSquare[6] + 10, formSquare[7] - 5, tempUser.nick);
+    esat::DrawPath(formSquare, 5);
+    
+    esat::DrawText(50, 300, "EMAIL:");
+    formSquare[1] += 50;
+    UpdateFormSection(&(*formSquare), 300);
+    esat::DrawText(formSquare[6] + 10, formSquare[7] - 5, tempUser.mail);
+    esat::DrawPath(formSquare, 5);
 
-  esat::DrawText(50, 250, "NICKNAME:");
-  formSquare[1] += 50;
-  UpdateFormSection(&(*formSquare), 300);
-  esat::DrawText(formSquare[6] + 10, formSquare[7] - 5, tempUser.nick);
-  esat::DrawPath(formSquare, 5);
-  
-  esat::DrawText(50, 300, "EMAIL:");
-  formSquare[1] += 50;
-  UpdateFormSection(&(*formSquare), 300);
-  esat::DrawText(formSquare[6] + 10, formSquare[7] - 5, tempUser.mail);
-  esat::DrawPath(formSquare, 5);
+    esat::DrawText(50, 350, "PASSWORD:");
+    formSquare[1] += 50;
+    UpdateFormSection(&(*formSquare), 300);
+    esat::DrawText(formSquare[6] + 10, formSquare[7] - 5, tempUser.psw);
+    esat::DrawPath(formSquare, 5);
 
-  esat::DrawText(50, 350, "PASSWORD:");
-  formSquare[1] += 50;
-  UpdateFormSection(&(*formSquare), 300);
-  esat::DrawText(formSquare[6] + 10, formSquare[7] - 5, tempUser.psw);
-  esat::DrawPath(formSquare, 5);
-
-  esat::DrawText(50, 400, "BIRTH YEAR:");
-  formSquare[1] += 50;
-  UpdateFormSection(&(*formSquare), 300);
-  char *letter = (char*)malloc(2 * sizeof(char));
-  letter[1] = '\0';
-  int j = 0;
-  for(int i = 0; i < 9 && i < strlen(tempUser.birth); i++){
-    if(i != 0 && i%2 == 0 && i < 5){
+    esat::DrawText(50, 400, "BIRTH YEAR:");
+    formSquare[1] += 50;
+    UpdateFormSection(&(*formSquare), 300);
+    char *letter = (char*)malloc(2 * sizeof(char));
+    letter[1] = '\0';
+    int j = 0;
+    for(int i = 0; i < 9 && i < strlen(tempUser.birth); i++){
+      if(i != 0 && i%2 == 0 && i < 5){
+        j++;
+      }
+      letter[0] = tempUser.birth[i];
+      esat::DrawText(formSquare[6] + 10 + (20*j), formSquare[7] - 5, letter);
       j++;
     }
-    letter[0] = tempUser.birth[i];
-    esat::DrawText(formSquare[6] + 10 + (20*j), formSquare[7] - 5, letter);
-    j++;
-  }
-  letter[0] = '/';
-  for(int i = 1; i < 3; i++){
-    esat::DrawText(formSquare[6] + 10 * i + (45*i), formSquare[7] - 5, letter);
-  }
-
-  esat::DrawPath(formSquare, 5);
-
-  esat::DrawText(50, 450, "PROVINCE:");
-  formSquare[1] += 50;
-  UpdateFormSection(&(*formSquare), 300);
-  esat::DrawText(formSquare[6] + 10, formSquare[7] - 5, tempUser.province);
-  esat::DrawPath(formSquare, 5);
-
-  esat::DrawText(50, 500, "NATION:");
-  formSquare[1] += 50;
-  UpdateFormSection(&(*formSquare), 300);
-  esat::DrawText(formSquare[6] + 10, formSquare[7] - 5, tempUser.nation);
-  esat::DrawPath(formSquare, 5);
-
-  formSquare[0] = ScreenX/2 - 110;    // x p1
-  formSquare[1] = 520;                // y p1
-  UpdateFormSection(&(*formSquare), 150);
-  
-  // this indicate if the user is on the confirm button or not
-  if(*form <= 7){
-    esat::DrawSolidPath(arrow, 3);
-    esat::DrawPath(formSquare, 5);
-  }
-  else{
-    esat::DrawSolidPath(formSquare, 5);
-    esat::DrawSetFillColor(0,0,0);
-  }
-  
-  esat::DrawText(ScreenX/2 - 100, ScreenY - 50, "CONFIRM");
-
-  //////////////////// INPUT MANAGER ////////////////////
-  printf("INPUT --> ");
-
-  switch (*form){
-    case 0: UpdateAccount(&tempUser.name, 16);     break;
-    case 1: UpdateAccount(&tempUser.surname, 16);  break;
-    case 2: UpdateAccount(&tempUser.nick, 3);      break;
-    case 3: UpdateAccount(&tempUser.mail, 16);     break;
-    case 4: UpdateAccount(&tempUser.psw, 16);      break;
-    case 5: UpdateAccount(&tempUser.birth, 8);     break;
-    case 6: UpdateAccount(&tempUser.province, 16); break;
-    case 7: UpdateAccount(&tempUser.nation, 16);   break;
-    case 8:
-      if(esat::IsSpecialKeyDown(esat::kSpecialKey_Enter)){
-        printf("Write Back --> ");
-
-        fseek(f, nUser*sizeof(Account), SEEK_SET);
-
-        fwrite(&tempUser.credit, sizeof(tempUser.credit), 1, f);
-        fwrite(&tempUser.personalHS, sizeof(tempUser.personalHS), 1, f);
-        fwrite(&tempUser.admin, sizeof(tempUser.admin), 1, f);
-
-        writeString(&f, tempUser.name, 4);
-        writeString(&f, tempUser.surname, 17);
-        writeString(&f, tempUser.mail, 17);
-        writeString(&f, tempUser.birth, 9);
-        writeString(&f, tempUser.province, 17);
-        writeString(&f, tempUser.nation, 17);
-        writeString(&f, tempUser.nick, 17);
-        writeString(&f, tempUser.psw, 17);
-      }
-    break;
-    if(esat::IsSpecialKeyDown(esat::kSpecialKey_Shift)){
-      tempUser.credit+=1;
-    }else if(esat::IsSpecialKeyDown(esat::kSpecialKey_Control)){
-      tempUser.credit-=1;
+    letter[0] = '/';
+    for(int i = 1; i < 3; i++){
+      esat::DrawText(formSquare[6] + 10 * i + (45*i), formSquare[7] - 5, letter);
     }
+
+    esat::DrawPath(formSquare, 5);
+
+    esat::DrawText(50, 450, "PROVINCE:");
+    formSquare[1] += 50;
+    UpdateFormSection(&(*formSquare), 300);
+    esat::DrawText(formSquare[6] + 10, formSquare[7] - 5, tempUser.province);
+    esat::DrawPath(formSquare, 5);
+
+    esat::DrawText(50, 500, "NATION:");
+    formSquare[1] += 50;
+    UpdateFormSection(&(*formSquare), 300);
+    esat::DrawText(formSquare[6] + 10, formSquare[7] - 5, tempUser.nation);
+    esat::DrawPath(formSquare, 5);
+
+    formSquare[0] = ScreenX/2 - 110;    // x p1
+    formSquare[1] = 520;                // y p1
+    UpdateFormSection(&(*formSquare), 150);
+    
+    // this indicate if the user is on the confirm button or not
+    if(*form <= 7){
+      esat::DrawSolidPath(arrow, 3);
+      esat::DrawPath(formSquare, 5);
+    }
+    else{
+      esat::DrawSolidPath(formSquare, 5);
+      esat::DrawSetFillColor(0,0,0);
+    }
+    
+    esat::DrawText(ScreenX/2 - 100, ScreenY - 50, "CONFIRM");
+
+    //////////////////// INPUT MANAGER ////////////////////
+    printf("INPUT --> ");
+    printf("\nFORM: %d", *form);
+    switch (*form){
+      case 0: UpdateAccount(&tempUser.name, 16);     break;
+      case 1: UpdateAccount(&tempUser.surname, 16);  break;
+      case 2: UpdateAccount(&tempUser.nick, 3);      break;
+      case 3: UpdateAccount(&tempUser.mail, 16);     break;
+      case 4: UpdateAccount(&tempUser.psw, 16);      break;
+      case 5: UpdateAccount(&tempUser.birth, 8);     break;
+      case 6: UpdateAccount(&tempUser.province, 16); break;
+      case 7: UpdateAccount(&tempUser.nation, 16);   break;
+      case 8:
+        if(esat::IsSpecialKeyDown(esat::kSpecialKey_Enter)){
+          fseek(f, nUser*(sizeof(int)*2 + sizeof(bool) + sizeof(char)*115/*4+17*6+9*/), SEEK_SET);
+
+          fwrite(&tempUser.credit, sizeof(tempUser.credit), 1, f);
+          fwrite(&tempUser.personalHS, sizeof(tempUser.personalHS), 1, f);
+          fwrite(&tempUser.admin, sizeof(tempUser.admin), 1, f);
+
+          writeString(&f, tempUser.name, 4);
+          writeString(&f, tempUser.surname, 17);
+          writeString(&f, tempUser.mail, 17);
+          writeString(&f, tempUser.birth, 9);
+          writeString(&f, tempUser.province, 17);
+          writeString(&f, tempUser.nation, 17);
+          writeString(&f, tempUser.nick, 17);
+          writeString(&f, tempUser.psw, 17);
+          *form = 0;  // reset de option
+          *page = 0;  // back to control pannel
+        }
+      break;
+
+      if(esat::IsSpecialKeyDown(esat::kSpecialKey_Shift)){
+        tempUser.credit+=1;
+      }else if(esat::IsSpecialKeyDown(esat::kSpecialKey_Control)){
+        tempUser.credit-=1;
+      }
+    }
+    fclose(f);
   }
-  fclose(f);
 }
 
-void deleteUser(int userSelect){
+void deleteUser(int userSelect, int *page){
+  FILE *f1;
+  FILE *temp;
 
-  FILE *f, *temp;
+  f1 = fopen("accounts.dat", "rb");
+  temp = fopen("temp.dat", "wb");
 
-  f = fopen("account.dat", "ab+");
+  if(f1 == NULL || temp == NULL){
+  }else{
+    Account user;
+    InitAccount(&user);
 
-  if(f){
-    temp = fopen("temp.dat", "ab+");
+    int currentIndex = 0;
 
-    Account temp;
+    // Read all accounts
+    while(fread(&user.credit, sizeof(int), 1, f1) &&
+                fread(&user.personalHS, sizeof(int), 1, f1) &&
+                fread(&user.admin, sizeof(bool), 1, f1) &&
+                readString(f1, user.name, 4) &&
+                readString(f1, user.surname, 17) &&
+                readString(f1, user.mail, 17) &&
+                readString(f1, user.birth, 9) &&
+                readString(f1, user.province, 17) &&
+                readString(f1, user.nation, 17) &&
+                readString(f1, user.nick, 17) &&
+                readString(f1, user.psw, 17)){
 
-    //temp = tempUserInit();
+      // Skip user to delete
+      if(currentIndex != userSelect){
 
+        fwrite(&user.credit, sizeof(int), 1, temp);
+        fwrite(&user.personalHS, sizeof(int), 1, temp);
+        fwrite(&user.admin, sizeof(bool), 1, temp);
+
+        writeString(&temp, user.name, 4);
+        writeString(&temp,user.surname, 17);
+        writeString(&temp,user.mail, 17);
+        writeString(&temp,user.birth, 9);
+        writeString(&temp,user.province, 17);
+        writeString(&temp,user.nation, 17);
+        writeString(&temp,user.nick, 17);
+        writeString(&temp,user.psw, 17);
+      }
+
+      currentIndex++;
+    }
+
+    fclose(f1);
+    fclose(temp);
     
+    remove("accounts.dat");
+    rename("temp.dat", "accounts.dat");
   }
-  //fread
-  /*
-    loop Fread, lo salvamos en fichero temp.
-    llegamos al que tenemos que eliminar, lo saltamos
-    eliminamos fichero original y le cambiamos el nombre al temp 
-  */
+  *page = 0;
 }
 
 void Admin(int *option, int *userSelect, int *page){
+  
+  if(!tempUser.nation){
+    InitAccount(&tempUser);
+  }
 
   switch (*page){
     case 0:
@@ -781,7 +799,10 @@ void Admin(int *option, int *userSelect, int *page){
         temp.birth =   (char*)malloc(17*sizeof(char));
         temp.province= (char*)malloc(17*sizeof(char));
         temp.nation =  (char*)malloc(17*sizeof(char));
+
+        esat::DrawSetFillColor(255,255,255);
         esat::DrawSetStrokeColor(255,255,255);
+
         esat::DrawSetTextSize(20);
         
         int HowMany = 0;
@@ -789,32 +810,34 @@ void Admin(int *option, int *userSelect, int *page){
         arrow = ArrowShape(1);
         esat::DrawSolidPath(arrow, 3);
 
-        float *selectionSquare;
-        selectionSquare = (float*)malloc(10*sizeof(float));
-
-        if(*option == 1){
-          selectionSquare[0] = 520;            // x p1
-          selectionSquare[2] = selectionSquare[0] + 60;  // x p2
-        }else if (*option == 2){
-          selectionSquare[0] = 650;  // x p1
-          selectionSquare[2] = selectionSquare[0] + 80;  // x p2
+        if(*option > 0){
+          float *selectionSquare;
+          selectionSquare = (float*)malloc(10*sizeof(float));
+  
+          if(*option == 1){
+            selectionSquare[0] = 520;            // x p1
+            selectionSquare[2] = selectionSquare[0] + 60;  // x p2
+          }else if (*option == 2){
+            selectionSquare[0] = 650;  // x p1
+            selectionSquare[2] = selectionSquare[0] + 80;  // x p2
+          }
+  
+          selectionSquare[1] = 140;                  // y p1
+          selectionSquare[3] = 140;                  // y p2
+          selectionSquare[4] = selectionSquare[2];  // x p3
+          selectionSquare[5] = 180;                  // y p3
+          selectionSquare[6] = selectionSquare[0];  // x p4
+          selectionSquare[7] = 180;                  // y p4
+          selectionSquare[8] = selectionSquare[0];  // x p5
+          selectionSquare[9] = 140;                  // y p6
+  
+          esat::DrawPath(selectionSquare, 5);
         }
-
-        selectionSquare[1] = 140;                  // y p1
-        selectionSquare[3] = 140;                  // y p2
-        selectionSquare[4] = selectionSquare[2];  // x p3
-        selectionSquare[5] = 180;                  // y p3
-        selectionSquare[6] = selectionSquare[0];  // x p4
-        selectionSquare[7] = 180;                  // y p4
-        selectionSquare[8] = selectionSquare[0];  // x p5
-        selectionSquare[9] = 140;                  // y p6
-
-        esat::DrawPath(selectionSquare, 5);
 
         printf("\nOPTION: %d, USERSELECT: %d\n", *option, *userSelect);
         
-        esat::DrawText(530, 95, "EDIT");
-        esat::DrawText(650, 95, "DELETE");
+        esat::DrawText(530, 170, "EDIT");
+        esat::DrawText(650, 170, "DELETE");
         bool skipfirst = false;
         printf("------------ADMIN------------\n");
         while(fread(&temp.credit, sizeof(int), 1, f) &&
@@ -843,12 +866,11 @@ void Admin(int *option, int *userSelect, int *page){
             }
             
             scroll += 80;
+            HowMany++;
           }
           skipfirst = true;
-          HowMany++;
           printf("\nEnd While\n");
         }
-        printf("Fclose\n");
 
         fclose(f);
         esat::DrawSetTextSize(30);
@@ -859,27 +881,27 @@ void Admin(int *option, int *userSelect, int *page){
           *option -= 1;
         }else if(esat::IsSpecialKeyDown(esat::kSpecialKey_Up) && *userSelect > 0){
           *userSelect -= 1;
-        }else if(esat::IsSpecialKeyDown(esat::kSpecialKey_Down) && *userSelect < HowMany && HowMany > 1){
+        }else if(esat::IsSpecialKeyDown(esat::kSpecialKey_Down) && *userSelect < HowMany - 1 && HowMany > 0){
           *userSelect += 1;
         }
         if(esat::IsSpecialKeyDown(esat::kSpecialKey_Enter) && *option > 0){
           *page = *option;
           *option = 0;
         }
-
-        printf("FREE temp\n");
+        fclose(f);
       }
       printf("\n---------------------------\n");
     break;
     case 1:
       printf("HERE WE GO AGAIN\n");
-      editUsers(*userSelect, &*option);
+      // +1 beacouse admins is the 0 so we skip him
+      editUsers(*userSelect + 1, &*option, &*page);
       printf("LETSGOSKY\n");
     break;
     case 2: // delete user
     // user selector * sizeof user --> delete
     // for user selector[i] * sizeof user = //[i+1]
-      deleteUser(*userSelect);
+      deleteUser(*userSelect + 1, &*page);
     break;
   }
 }

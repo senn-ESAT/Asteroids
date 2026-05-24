@@ -338,8 +338,7 @@ int esat::main(int argc, char** argv) {
         InGame(&ship, &bullets, &asteroid, &enemy, &screenSelector, &menuPage, &scoreList, &user);
       break;
       case 3: // admin
-        // el puto crashea
-        //Admin(&option, &formSection, &menuPage);
+        Admin(&option, &formSection, &menuPage);
       break;
     }
    
