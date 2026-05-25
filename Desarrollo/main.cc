@@ -12,15 +12,14 @@
 #include "esat/input.h"
 #include "esat/sprite.h"
 #include "esat/time.h"
+#include "./MathLib.h"
 
 ////////GLOBAL////////
 const unsigned int ScreenX = 800;
 const unsigned int ScreenY = 600;
-const float max_speed = 7.0f; // no need for this as a global
 int nAste = 0, lvl = 1;
 
 ////////PAGES////////
-#include "./MathLib.h"
 #include "./bullet.cc"
 #include "./asteroids.cc"
 #include "./enemies.cc"
@@ -247,31 +246,26 @@ void GameManager(Ship *ship, int *screen, int *menu, ScoreBoard **scoreList, Acc
 
 void InGame(Ship *ship, Bullet **bullets, Asteroids **asteroid, UFO *enemy, int *screen, int *menu, ScoreBoard **scoreList, Account *user){
   // UPDATE
-  printf("\n\n[initShip -->");
+  printf("UPDATE");
   initShip(&(*ship));
   SpawnUFO(&(*enemy));
   
-  
-  printf(" CONTROLS -->");
+
   Controls(&*ship, &*bullets);
 
   if(enemy->alive){
-    printf(" UFO --> ");
     ManageUFO(&(*enemy), ship->pos);
     
-    printf(" UFO BULLETS--> ");
     EnemyBulletCollisions(&(*enemy).enemyBullets, &*asteroid, &ship);
   }
   
-  printf(" BORDERS -->");
   CheckBorder(&*ship, &*bullets, &*asteroid, &enemy);
   
-  printf(" COLISION -->");
   PlayerBulletCollisions(&*bullets, &*asteroid, &enemy, &ship->score);
   BodyCollisionWithPlayer(&*asteroid, &enemy, &ship);
   
   // MOVE
-  printf(" MOVE -->");
+  printf(" MOVE ");
   Move(&*ship, &*bullets, &*asteroid, &*enemy);
   
   // friction
@@ -279,10 +273,9 @@ void InGame(Ship *ship, Bullet **bullets, Asteroids **asteroid, UFO *enemy, int 
   printf(" end]");
   
   // DRAW
-  printf(" DRAW -->");
+  printf(" DRAW");
   DrawThings(*ship, *bullets, *asteroid, enemy);
 
-  printf(" MANAGER -->");
   GameManager(&*ship, &*screen, &*menu, &(*scoreList), &user);
 }
 

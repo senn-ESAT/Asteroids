@@ -42,7 +42,6 @@ bool colisionDetector(esat::Vec2 point, esat::Mat3 matPoint, colisionArea *colsi
     int i = 0;
     bool stillSame = true;
     float previousCross = 0.0f;
-    printf("\n");
     while(stillSame && i < nPoints){
       mm::Vec2 A = {areaPoints[i].x, areaPoints[i].y};
       mm::Vec2 B = {areaPoints[(i + 1) % nPoints].x, areaPoints[(i + 1) % nPoints].y};
@@ -157,7 +156,6 @@ bool IsInsidePlayer(Ship *ship, mm::Vec2 pointPos){
   }
   
 void EnemyBulletCollisions(Bullet **bullets, Asteroids **aste, Ship **player){
-  
   if(BulletAmount((*bullets))){
     Bullet *b;
     bool isBcompromized = false;

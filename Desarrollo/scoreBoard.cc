@@ -5,7 +5,6 @@ struct ScoreBoard{
 
 void InitScoreList(ScoreBoard **scoreThing){
   FILE *f;
-  printf(" --> MALLOC");
   (*scoreThing) = (ScoreBoard*)malloc(10 * sizeof(ScoreBoard));
   
   f = fopen("HS.dat", "rb");

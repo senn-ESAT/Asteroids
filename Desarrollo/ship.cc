@@ -33,6 +33,7 @@ void initShip(Ship *ship){
 }
 
 void Controls(Ship *ship, Bullet **bullets){
+  float max_speed = 7.0f;
   //speed
   float current_speed = mm::magnitudeV2(ship->speed);
   if(esat::IsKeyPressed('w') || esat::IsKeyPressed('W')
@@ -42,7 +43,7 @@ void Controls(Ship *ship, Bullet **bullets){
       ship->speed = mm::scaleV2(ship->speed, max_speed);
     }else{
       mm::Vec2 thrust = {sinf(ship->angulo), cosf(ship->angulo)}; // ship direction
-      thrust = mm::scaleV2(thrust, 0.065f);                       // add acceleration
+      thrust = mm::scaleV2(thrust, 0.07f);                       // add acceleration
       ship->speed = mm::sumVec2(ship->speed, thrust);             // add thrust to current speed
     }
   }
@@ -70,11 +71,10 @@ void Controls(Ship *ship, Bullet **bullets){
     
     speed = mm::scaleV2(dir, 7.5f);
     
-    printf("[FIRE]\n");
     InsertBullet(&(*bullets), pos, speed, 0);
   }
+  
   if(BulletAmount(*bullets) != 0){
-    printf("ELIM");
     ElimBullet(&(*bullets));
   }
 }
@@ -86,7 +86,3 @@ void SpawnShip(Ship *player){
   player->angulo = 0.0f;   
   player->dying = false; 
 }
-
-// void DeathAnimation(Ship){
-
-// }

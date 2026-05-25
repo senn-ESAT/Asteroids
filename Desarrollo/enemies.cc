@@ -15,14 +15,11 @@ void initUFO(UFO *enemy){
 }
 
 void SpawnUFO(UFO *enemy){
-  printf("[%d]", enemy->alive);
   if(enemy->alive == false && enemy->TimeDeath + 5000 < esat::Time()){ //10 sec after death it respawn
-    printf("a");
     enemy->alive = true;
     enemy->fireTime = esat::Time();
     enemy->newDirection = esat::Time();
 
-    printf("b");
     if(rand()%2){ // RIGHT
       enemy->pos = {0.0f, 50 + ((float)(rand()) / (float)(ScreenY - 100))}; // 0,50-550
       enemy->speed = { 2.0f, 0.0f};
@@ -133,7 +130,6 @@ void ManageUFO(UFO *enemy, mm::Vec2 playerPos){
         
         mm::Vec2 bspeed = mm::scaleV2(dir, 7.5f);
         
-        printf("[FIRE]\n");
         InsertBullet(&enemy->enemyBullets, enemy->pos, bspeed, 1);
         enemy->fireTime = esat::Time();
       }

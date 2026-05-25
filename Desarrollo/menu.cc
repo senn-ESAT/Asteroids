@@ -14,8 +14,6 @@ void initialScreen(int *option, int *screenP, Ship *ship, int *credit){
       ship->health = 3;
       ship->score = 0;
       *credit-= 1 ;
-
-      
     }      
   }
 }
@@ -68,7 +66,6 @@ void Menu(int *page, Account *user, int *option, int *screen, Ship *ship, ScoreB
   char *dCredit;
   dCredit = (char*)malloc(3 * sizeof(char));
   if(user->credit){
-    printf("  C: %d  ", user->credit);
     itoa(user->credit, dCredit, 10);
   }else{
     dCredit[0] = '0';

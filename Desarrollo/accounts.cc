@@ -25,9 +25,9 @@ void InitAccount(Account *user){
   user->province= nullptr;
   user->nation =  nullptr;
 
-  user->name =    (char*)malloc(4*sizeof(char));
+  user->name =    (char*)malloc(17*sizeof(char));
   user->surname = (char*)malloc(17*sizeof(char));
-  user->nick =    (char*)malloc(17*sizeof(char));
+  user->nick =    (char*)malloc(4*sizeof(char));
   user->mail =    (char*)malloc(17*sizeof(char));
   user->psw =     (char*)malloc(17*sizeof(char));
   user->birth =   (char*)malloc(9*sizeof(char));  // dd-mm-yyyy = 8+\0 = 9
@@ -55,11 +55,12 @@ void UpdateFormSection(float *section, float size){
   section[9] = section[1];        // y p5
 }
 
-float* ArrowShape(int position){
+float* ArrowShape(int position, float startinPoint, float spacing){
   float *temp;
   temp = (float*)malloc(6*sizeof(float));
   temp[0] = 20;
-  temp[1] = 130 + (50 * position);
+          // 130            50
+  temp[1] = startinPoint + (spacing * position);
   temp[2] = 40;
   temp[3] = temp[1]+10;
   temp[4] = 20;
@@ -105,17 +106,6 @@ void UpdateAccount(char **campo, int nLetters){
   }
 }
 
-void freeTemp(Account *temp){
-  // free(temp->name); temp->name = NULL;
-  // free(temp->surname); temp->surname = NULL;
-  // free(temp->nick); temp->nick = NULL;
-  // free(temp->mail); temp->mail = NULL;
-  // free(temp->psw);  temp->psw = NULL;
-  // free(temp->birth);  temp->birth = NULL;
-  // free(temp->province); temp->province = NULL;
-  // free(temp->nation); temp->nation = NULL;
-}
-
 // Qué asco los punteros, Fede, porfa, para los ficheros, déjanos usar los arrays
 void writeString(FILE **f, char* text, int length){
   int i = 0;
@@ -140,25 +130,22 @@ void AddAdmin(){
   FILE *f1;
   f1 = fopen("accounts.dat", "rb+");
   if(f1 == NULL){
-    printf("0");
 
     Account temp;
-    temp.name =    (char*)malloc(4*sizeof(char));
+    temp.name =    (char*)malloc(17*sizeof(char));
     temp.surname = (char*)malloc(17*sizeof(char));
-    temp.nick =    (char*)malloc(17*sizeof(char));
+    temp.nick =    (char*)malloc(4*sizeof(char));
     temp.mail =    (char*)malloc(17*sizeof(char));
     temp.psw =     (char*)malloc(17*sizeof(char));
     temp.birth =   (char*)malloc(9*sizeof(char));
     temp.province= (char*)malloc(17*sizeof(char));
     temp.nation =  (char*)malloc(17*sizeof(char));
 
-    printf("1");
     temp.mail = "ADMIN\0";
     temp.psw = "A123456\0";
     temp.credit = 0;
     temp.personalHS = 0;
     temp.admin = true;
-    printf("2");
 
     temp.name[0] =    '\0';
     temp.surname[0] = '\0';
@@ -166,22 +153,20 @@ void AddAdmin(){
     temp.birth[0] =   '\0';
     temp.province[0]= '\0';
     temp.nation[0] =  '\0';
-    printf("3");
 
     f1 = fopen("accounts.dat", "wb");
     
     fwrite(&temp.credit, sizeof(temp.credit), 1, f1);
     fwrite(&temp.personalHS, sizeof(temp.personalHS), 1, f1);
     fwrite(&temp.admin, sizeof(temp.admin), 1, f1);
-    printf("4");
 
-    writeString(&f1, temp.name, 4);
+    writeString(&f1, temp.name, 17);
     writeString(&f1, temp.surname, 17);
     writeString(&f1, temp.mail, 17);
     writeString(&f1, temp.birth, 9);
     writeString(&f1, temp.province, 17);
     writeString(&f1, temp.nation, 17);
-    writeString(&f1, temp.nick, 17);
+    writeString(&f1, temp.nick, 4);
     writeString(&f1, temp.psw, 17);
     fclose(f1);
   } else {
@@ -194,14 +179,13 @@ int CheckValidity(Account **users, bool option){
   
   // esta verifica sirve para ambos casos
   if((*users)->mail[0] == '\0' && (*users)->psw[0] == '\0'){
-    printf("EMPTY\n");
     return 1;
   }
 
   Account temp;
-  temp.name =    (char*)malloc(4*sizeof(char));
+  temp.name =    (char*)malloc(17*sizeof(char));
   temp.surname = (char*)malloc(17*sizeof(char));
-  temp.nick =    (char*)malloc(17*sizeof(char));
+  temp.nick =    (char*)malloc(4*sizeof(char));
   temp.mail =    (char*)malloc(17*sizeof(char));
   temp.psw =     (char*)malloc(17*sizeof(char));
   temp.birth =   (char*)malloc(9*sizeof(char));
@@ -213,22 +197,20 @@ int CheckValidity(Account **users, bool option){
 
     f1 = fopen("accounts.dat", "rb");
     if(f1 != NULL){
-      printf("[FILE EXIST]\n");
       while(fread(&temp.credit, sizeof(int), 1, f1) &&
             fread(&temp.personalHS, sizeof(int), 1, f1) &&
             fread(&temp.admin, sizeof(bool), 1, f1) &&
-            readString(f1, temp.name, 4) &&
+            readString(f1, temp.name, 17) &&
             readString(f1, temp.surname, 17) &&
             readString(f1, temp.mail, 17) &&
             readString(f1, temp.birth, 9) &&
             readString(f1, temp.province, 17) &&
             readString(f1, temp.nation, 17) &&
-            readString(f1, temp.nick, 17) &&
+            readString(f1, temp.nick, 4) &&
             readString(f1, temp.psw, 17)){
         if(strcmp((*users)->mail, temp.mail) == 0 && strcmp((*users)->psw, temp.psw) == 0){
           *(*users) = temp;
           fclose(f1);
-          freeTemp(&temp);
           return 0;
         }
       }
@@ -236,44 +218,37 @@ int CheckValidity(Account **users, bool option){
     // no file no accounts
     // or while ended so no match
     fclose(f1);
-    freeTemp(&temp);
     return 1;
   }// REGISTER
   else{
-    printf("[------REGISTER START------]\n");
     if((*users)->name[0] == '\0'
       && (*users)->surname[0] == '\0'
       && (*users)->nick[0] == '\0'
       && (*users)->birth[0] == '\0'
       && (*users)->province[0] == '\0'
       && (*users)->nation[0] == '\0'){
-      printf("EMPTY\n");
-      freeTemp(&temp);
       return 1;
     }
 
     f1 = fopen("accounts.dat", "rb");
     if(f1 != NULL){
-      printf("[FILE EXIST]\n");
       while(fread(&temp.credit, sizeof(int), 1, f1) &&
             fread(&temp.personalHS, sizeof(int), 1, f1) &&
             fread(&temp.admin, sizeof(bool), 1, f1) &&
-            readString(f1, temp.name, 4) &&
+            readString(f1, temp.name, 17) &&
             readString(f1, temp.surname, 17) &&
             readString(f1, temp.mail, 17) &&
             readString(f1, temp.birth, 9) &&
             readString(f1, temp.province, 17) &&
             readString(f1, temp.nation, 17) &&
-            readString(f1, temp.nick, 17) &&
+            readString(f1, temp.nick, 4) &&
             readString(f1, temp.psw, 17)){
-        printf("[LOOP]\n");
 
         // if account alredy exist then stop and exit
         if(strcmp((*users)->mail, temp.mail) == 0 && strcmp((*users)->nick, temp.nick) == 0){
           // if it match then account alredy registered
           printf("[ACCOUNT ALREDY EXIST]\n");
           fclose(f1);
-          freeTemp(&temp);
           return 1;
         }
       }
@@ -282,7 +257,6 @@ int CheckValidity(Account **users, bool option){
     // if exited while it means that there is no match in the current list of accounts
     // or the file is empty so no need for verifiation if it exist
 
-    printf("[ADDING ACCOUNT]\n");
     temp = *(*users);
     temp.credit = 10;
     temp.personalHS = 0;
@@ -290,33 +264,27 @@ int CheckValidity(Account **users, bool option){
     (*users)->credit = temp.credit;
     (*users)->personalHS = temp.personalHS;
 
-    printf(" --> OPEN");
     // ab+ is w/r at the last positions
     f1 = fopen("accounts.dat", "ab+");
 
-    printf(" --> WRITE NUMBERS");
     fwrite(&temp.credit, sizeof(temp.credit), 1, f1);
     fwrite(&temp.personalHS, sizeof(temp.personalHS), 1, f1);
     fwrite(&temp.admin, sizeof(temp.admin), 1, f1);
 
-    printf(" --> WRITE STRING");
-    writeString(&f1, temp.name, 4);
+    writeString(&f1, temp.name, 17);
     writeString(&f1, temp.surname, 17);
     writeString(&f1, temp.mail, 17);
     writeString(&f1, temp.birth, 9);
     writeString(&f1, temp.province, 17);
     writeString(&f1, temp.nation, 17);
-    writeString(&f1, temp.nick, 17);
+    writeString(&f1, temp.nick, 4);
     writeString(&f1, temp.psw, 17);
 
-    printf(" --> CLOSE");
     fclose(f1);
 
-    freeTemp(&temp);
     return 0;
   }
   printf("[INVALID OPERATION]\n");
-  freeTemp(&temp);
   return 1;
 }
 
@@ -328,7 +296,7 @@ void Register(int *form, Account *user, int *screen){
 
   float *formSquare, *arrow;
   // Indication arrow
-  arrow = ArrowShape((*form));
+  arrow = ArrowShape((*form), 130, 50);
   // the square of both form section and buttons
   formSquare = (float*)malloc(10*sizeof(float));
   formSquare[0] = ScreenX/2;  // x p1
@@ -455,7 +423,7 @@ void LogIn(int *form, Account *user, int *screen){
   formSquare[1] = 200; // y p1
   UpdateFormSection(&(*formSquare), 600);
 
-  arrow = ArrowShape((*form));
+  arrow = ArrowShape((*form), 210, 130);
 
   esat::DrawText(100, 180, "EMAIL:");
   esat::DrawText(formSquare[6] + 10, formSquare[7] - 5, user->mail);
@@ -566,23 +534,21 @@ void editUsers(int nUser, int *form, int *page){
   FILE *f;
   f = fopen("accounts.dat", "rb+");
   if(f == NULL){
-    printf("NO FUNSICA");
   }else{
 
     fseek(f, nUser*(sizeof(int)*2 + sizeof(bool) + sizeof(char)*115/*4+17*6+9*/), SEEK_SET);
     
-    printf("Read --> ");
     if(tempUser.name[0] == '\0'){ //read only once
       fread(&tempUser.credit, sizeof(int), 1, f);
       fread(&tempUser.personalHS, sizeof(int), 1, f);
       fread(&tempUser.admin, sizeof(bool), 1, f);
-      readString(f, tempUser.name, 4);
+      readString(f, tempUser.name, 17);
       readString(f, tempUser.surname, 17);
       readString(f, tempUser.mail, 17);
       readString(f, tempUser.birth, 9);
       readString(f, tempUser.province, 17);
       readString(f, tempUser.nation, 17);
-      readString(f, tempUser.nick, 17);
+      readString(f, tempUser.nick, 4);
       readString(f, tempUser.psw, 17);
     }
     
@@ -594,7 +560,7 @@ void editUsers(int nUser, int *form, int *page){
 
     float *formSquare, *arrow;
     // Indication arrow
-    arrow = ArrowShape((*form));
+    arrow = ArrowShape((*form), 130, 50);
     // the square of both form section and buttons
     formSquare = (float*)malloc(10*sizeof(float));
     formSquare[0] = ScreenX/2;  // x p1
@@ -667,6 +633,11 @@ void editUsers(int nUser, int *form, int *page){
     formSquare[1] = 520;                // y p1
     UpdateFormSection(&(*formSquare), 150);
     
+    char *p1Score = (char*)malloc(5 * sizeof(char));
+    itoa(tempUser.credit, p1Score, 10);
+
+    esat::DrawText(ScreenX/2 - 30, 30, p1Score);
+
     // this indicate if the user is on the confirm button or not
     if(*form <= 7){
       esat::DrawSolidPath(arrow, 3);
@@ -679,9 +650,13 @@ void editUsers(int nUser, int *form, int *page){
     
     esat::DrawText(ScreenX/2 - 100, ScreenY - 50, "CONFIRM");
 
+      if(esat::IsSpecialKeyDown(esat::kSpecialKey_Shift)){
+        tempUser.credit+=1;
+      }else if(esat::IsSpecialKeyDown(esat::kSpecialKey_Control)){
+        tempUser.credit-=1;
+      }
+
     //////////////////// INPUT MANAGER ////////////////////
-    printf("INPUT --> ");
-    printf("\nFORM: %d", *form);
     switch (*form){
       case 0: UpdateAccount(&tempUser.name, 16);     break;
       case 1: UpdateAccount(&tempUser.surname, 16);  break;
@@ -699,25 +674,23 @@ void editUsers(int nUser, int *form, int *page){
           fwrite(&tempUser.personalHS, sizeof(tempUser.personalHS), 1, f);
           fwrite(&tempUser.admin, sizeof(tempUser.admin), 1, f);
 
-          writeString(&f, tempUser.name, 4);
+          writeString(&f, tempUser.name, 17);
           writeString(&f, tempUser.surname, 17);
           writeString(&f, tempUser.mail, 17);
           writeString(&f, tempUser.birth, 9);
           writeString(&f, tempUser.province, 17);
           writeString(&f, tempUser.nation, 17);
-          writeString(&f, tempUser.nick, 17);
+          writeString(&f, tempUser.nick, 4);
           writeString(&f, tempUser.psw, 17);
           *form = 0;  // reset de option
           *page = 0;  // back to control pannel
         }
       break;
 
-      if(esat::IsSpecialKeyDown(esat::kSpecialKey_Shift)){
-        tempUser.credit+=1;
-      }else if(esat::IsSpecialKeyDown(esat::kSpecialKey_Control)){
-        tempUser.credit-=1;
-      }
+
     }
+
+    free(p1Score);
     fclose(f);
   }
 }
@@ -740,13 +713,13 @@ void deleteUser(int userSelect, int *page){
     while(fread(&user.credit, sizeof(int), 1, f1) &&
                 fread(&user.personalHS, sizeof(int), 1, f1) &&
                 fread(&user.admin, sizeof(bool), 1, f1) &&
-                readString(f1, user.name, 4) &&
+                readString(f1, user.name, 17) &&
                 readString(f1, user.surname, 17) &&
                 readString(f1, user.mail, 17) &&
                 readString(f1, user.birth, 9) &&
                 readString(f1, user.province, 17) &&
                 readString(f1, user.nation, 17) &&
-                readString(f1, user.nick, 17) &&
+                readString(f1, user.nick, 4) &&
                 readString(f1, user.psw, 17)){
 
       // Skip user to delete
@@ -756,13 +729,13 @@ void deleteUser(int userSelect, int *page){
         fwrite(&user.personalHS, sizeof(int), 1, temp);
         fwrite(&user.admin, sizeof(bool), 1, temp);
 
-        writeString(&temp, user.name, 4);
+        writeString(&temp, user.name, 17);
         writeString(&temp,user.surname, 17);
         writeString(&temp,user.mail, 17);
         writeString(&temp,user.birth, 9);
         writeString(&temp,user.province, 17);
         writeString(&temp,user.nation, 17);
-        writeString(&temp,user.nick, 17);
+        writeString(&temp,user.nick, 4);
         writeString(&temp,user.psw, 17);
       }
 
@@ -780,7 +753,7 @@ void deleteUser(int userSelect, int *page){
 
 void Admin(int *option, int *userSelect, int *page){
   
-  if(!tempUser.nation){
+  if(!tempUser.nation){ // ??? supocngo que verifica la existencia de tempUser
     InitAccount(&tempUser);
   }
 
@@ -791,9 +764,9 @@ void Admin(int *option, int *userSelect, int *page){
       
       if(f != NULL){
         Account temp;
-        temp.name =    (char*)malloc(4*sizeof(char));
+        temp.name =    (char*)malloc(17*sizeof(char));
         temp.surname = (char*)malloc(17*sizeof(char));
-        temp.nick =    (char*)malloc(17*sizeof(char));
+        temp.nick =    (char*)malloc(4*sizeof(char));
         temp.mail =    (char*)malloc(17*sizeof(char));
         temp.psw =     (char*)malloc(17*sizeof(char));
         temp.birth =   (char*)malloc(17*sizeof(char));
@@ -807,7 +780,7 @@ void Admin(int *option, int *userSelect, int *page){
         
         int HowMany = 0;
         float scroll = 170.0f - (*userSelect * 80), *formSquare, *arrow;
-        arrow = ArrowShape(1);
+        arrow = ArrowShape(1, 130, 50);
         esat::DrawSolidPath(arrow, 3);
 
         if(*option > 0){
@@ -834,22 +807,20 @@ void Admin(int *option, int *userSelect, int *page){
           esat::DrawPath(selectionSquare, 5);
         }
 
-        printf("\nOPTION: %d, USERSELECT: %d\n", *option, *userSelect);
         
         esat::DrawText(530, 170, "EDIT");
         esat::DrawText(650, 170, "DELETE");
         bool skipfirst = false;
-        printf("------------ADMIN------------\n");
         while(fread(&temp.credit, sizeof(int), 1, f) &&
               fread(&temp.personalHS, sizeof(int), 1, f) &&
               fread(&temp.admin, sizeof(bool), 1, f) &&
-              readString(f, temp.name, 4) &&
+              readString(f, temp.name, 17) &&
               readString(f, temp.surname, 17) &&
               readString(f, temp.mail, 17) &&
               readString(f, temp.birth, 9) &&
               readString(f, temp.province, 17) &&
               readString(f, temp.nation, 17) &&
-              readString(f, temp.nick, 17) &&
+              readString(f, temp.nick, 4) &&
               readString(f, temp.psw, 17)){
           
           esat::DrawSetStrokeColor(255,255,255);
@@ -869,7 +840,6 @@ void Admin(int *option, int *userSelect, int *page){
             HowMany++;
           }
           skipfirst = true;
-          printf("\nEnd While\n");
         }
 
         fclose(f);
@@ -890,13 +860,10 @@ void Admin(int *option, int *userSelect, int *page){
         }
         fclose(f);
       }
-      printf("\n---------------------------\n");
     break;
     case 1:
-      printf("HERE WE GO AGAIN\n");
       // +1 beacouse admins is the 0 so we skip him
       editUsers(*userSelect + 1, &*option, &*page);
-      printf("LETSGOSKY\n");
     break;
     case 2: // delete user
     // user selector * sizeof user --> delete
